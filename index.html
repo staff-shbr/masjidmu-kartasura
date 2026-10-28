@@ -1,1249 +1,1479 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="h-full">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>MasjidMu Kartasura (Aplikasi Pondok Shabran 2026)</title>
-  <meta name="theme-color" content="#2F3185">
-  <meta name="description" content="Sistem Informasi & Pemetaan Masjid Muhammadiyah Kecamatan Kartasura - Karya Santri Pondok Shabran 2026">
-  
-  <!-- PWA Web App Manifest -->
-  <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22MasjidMu%20Kartasura%22%2C%22short_name%22%3A%22MasjidMu%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%232F3185%22%2C%22theme_color%22%3A%22%232F3185%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F4388%2F4388339.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MasjidMu Kartasura - Aplikasi Pondok Shabran 2026</title>
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              navy: '#2F3185',
-              darkNavy: '#1E2056',
-              teal: '#1CBDB3',
-              gold: '#FFB800',
-              bgLight: '#F8FAFC',
-              cardBg: '#FFFFFF',
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            navy: '#2F3185',
+                            teal: '#1CBDB3',
+                            gold: '#FFB800',
+                            dark: '#1A1C24',
+                            light: '#F8FAF9',
+                            surface: '#FFFFFF',
+                            card: '#F0F4F3'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Segoe UI', 'sans-serif']
+                    }
+                }
             }
-          },
-          fontFamily: {
-            sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
-          }
         }
-      }
-    }
-  </script>
+    </script>
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-  <!-- Leaflet CSS & JS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet JS & CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F4F7F6;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-  <style>
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-    
-    /* Leaflet customization */
-    .leaflet-popup-content-wrapper {
-      border-radius: 1rem;
-      padding: 4px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-    }
-    .leaflet-popup-tip {
-      background: white;
-    }
-    
-    /* Custom Scrollbars */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #F1F5F9;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #CBD5E1;
-      border-radius: 9999px;
-    }
-    
-    /* MD3 Pulse Animation for GPS */
-    @keyframes pulse-ring {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.15); opacity: 0.4; }
-      100% { transform: scale(0.95); opacity: 0.8; }
-    }
-    .gps-active-pulse {
-      animation: pulse-ring 2s infinite ease-in-out;
-    }
+        /* Map styling */
+        #map {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
 
-    /* Print Styles for PDF Export */
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-      #print-area, #print-area * {
-        visibility: visible;
-      }
-      #print-area {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        padding: 20px;
-        background: white;
-        color: black;
-      }
-      .no-print {
-        display: none !important;
-      }
-    }
-  </style>
+        /* Custom Dome Leaflet Marker */
+        .custom-dome-icon {
+            background: transparent;
+            border: none;
+        }
+
+        .dome-pin-wrapper {
+            position: relative;
+            width: 42px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.35));
+            transition: transform 0.2s ease;
+        }
+
+        .dome-pin-wrapper:hover {
+            transform: scale(1.15) translateY(-4px);
+        }
+
+        /* Smooth Bottom Sheet Animation */
+        .bottom-sheet {
+            transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
+        .bottom-sheet.hidden-sheet {
+            transform: translateY(100%);
+        }
+
+        /* Hide Scrollbars */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Media Print Optimization for PDF Export */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            #app-topbar, #bottom-nav, #map-view, #filter-bar, #action-buttons-view, .no-print {
+                display: none !important;
+            }
+            #directory-view, #report-view {
+                display: block !important;
+                position: static !important;
+                width: 100% !important;
+                overflow: visible !important;
+            }
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 20px;
+                border-bottom: 2px solid #2F3185;
+                padding-bottom: 10px;
+            }
+            .print-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 10pt;
+            }
+            .print-table th, .print-table td {
+                border: 1px solid #cbd5e1;
+                padding: 6px 8px;
+                text-align: left;
+            }
+            .print-table th {
+                background-color: #f1f5f9 !important;
+                font-weight: bold;
+            }
+        }
+    </style>
 </head>
-<body class="bg-slate-100 text-slate-800 antialiased flex flex-col min-h-screen overflow-x-hidden">
 
-  <!-- TOP HEADER / APP BAR (Material Design 3) -->
-  <header class="no-print sticky top-0 z-30 bg-gradient-to-r from-brand-navy to-brand-darkNavy text-white shadow-md">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <!-- Title & Branding -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-brand-teal/20 border border-brand-teal/40 flex items-center justify-center text-brand-gold text-xl font-bold shadow-inner">
-          <i class="fa-solid fa-mosque"></i>
-        </div>
-        <div>
-          <h1 class="font-extrabold text-base sm:text-lg leading-tight tracking-tight text-white flex items-center gap-2">
-            MasjidMu Kartasura
-            <span class="text-[10px] bg-brand-teal/30 text-brand-teal font-semibold px-2 py-0.5 rounded-full border border-brand-teal/30">PWA</span>
-          </h1>
-          <p class="text-[11px] text-slate-300 font-medium">Aplikasi Pondok Shabran 2026 • GIS 30 Masjid</p>
-        </div>
-      </div>
+<body class="h-full flex flex-col overflow-hidden text-slate-800 antialiased selection:bg-brand-teal selection:text-white">
 
-      <!-- GPS Status Indicator Badge -->
-      <div class="flex items-center gap-2">
-        <div id="gps-status-badge" class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-200 border border-red-400/30 backdrop-blur-sm transition-all duration-300">
-          <span id="gps-dot" class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span>
-          <span id="gps-text">GPS: NON-AKTIF</span>
-        </div>
-
-        <!-- Quick Export PDF & CSV Action Buttons -->
-        <div class="hidden sm:flex items-center gap-1.5">
-          <button onclick="exportCSV()" title="Unduh File CSV" class="p-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition text-xs font-semibold flex items-center gap-1.5 border border-white/10">
-            <i class="fa-solid fa-file-csv text-brand-gold"></i>
-            <span>CSV</span>
-          </button>
-          <button onclick="printPDF()" title="Cetak PDF Laporan Resmi" class="p-2 bg-brand-teal hover:bg-teal-500 text-brand-darkNavy font-bold rounded-xl transition text-xs flex items-center gap-1.5 shadow-sm">
-            <i class="fa-solid fa-print"></i>
-            <span>PDF Laporan</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- MAIN APP CONTAINER -->
-  <main class="no-print flex-1 max-w-7xl w-full mx-auto relative flex flex-col">
-    
-    <!-- TAB 1: PETA SATELIT VIEW -->
-    <section id="tab-peta" class="flex-1 flex flex-col relative w-full h-[calc(100vh-130px)] sm:h-[calc(100vh-140px)]">
-      
-      <!-- Top Floating Search & Filter Bar over Map -->
-      <div class="absolute top-3 left-3 right-3 z-[1000] max-w-lg mx-auto bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/80 p-2.5 flex items-center gap-2">
-        <div class="relative flex-1">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-          <input type="text" id="map-search-input" oninput="handleSearch(this.value)" placeholder="Cari masjid atau lokasi..." 
-                 class="w-full pl-8 pr-3 py-1.5 bg-slate-100 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-teal text-slate-800 font-medium">
-        </div>
-        
-        <select id="map-desa-filter" onchange="handleDesaFilter(this.value)" class="bg-slate-100 text-xs rounded-xl px-2.5 py-1.5 border-none focus:ring-2 focus:ring-brand-teal text-slate-700 font-semibold cursor-pointer">
-          <option value="ALL">Semua Desa (10)</option>
-          <option value="Pabelan">Pabelan</option>
-          <option value="Kartasura">Kartasura</option>
-          <option value="Ngadirejo">Ngadirejo</option>
-          <option value="Singopuran">Singopuran</option>
-          <option value="Gatak">Gatak</option>
-          <option value="Makamhaji">Makamhaji</option>
-          <option value="Gonilan">Gonilan</option>
-          <option value="Kertonatan">Kertonatan</option>
-          <option value="Wirogunan">Wirogunan</option>
-          <option value="Pucangan">Pucangan</option>
-        </select>
-      </div>
-
-      <!-- Map Canvas -->
-      <div id="map" class="w-full h-full z-10 bg-slate-900"></div>
-
-      <!-- Floating Location & Stats Button -->
-      <div class="absolute bottom-4 right-4 z-[1000] flex flex-col gap-2">
-        <button onclick="recenterMapToUser()" title="Pusatkan ke Lokasi Saya" class="w-12 h-12 bg-white text-brand-navy rounded-2xl shadow-xl flex items-center justify-center border border-slate-200 hover:bg-slate-50 active:scale-95 transition text-lg">
-          <i class="fa-solid fa-location-crosshairs text-brand-teal"></i>
-        </button>
-      </div>
-
-      <!-- Map Summary Banner -->
-      <div class="absolute bottom-4 left-4 z-[1000] bg-brand-darkNavy/90 backdrop-blur-md text-white px-3 py-2 rounded-2xl shadow-xl border border-white/10 text-[11px] flex items-center gap-3">
-        <div>
-          <span class="text-slate-400 block text-[9px] uppercase tracking-wider font-semibold">Total Masjid</span>
-          <span class="font-bold text-brand-gold text-xs" id="map-counter-text">30 Masjid</span>
-        </div>
-        <div class="w-px h-6 bg-slate-700"></div>
-        <div>
-          <span class="text-slate-400 block text-[9px] uppercase tracking-wider font-semibold">Layer Utama</span>
-          <span class="font-semibold text-brand-teal text-xs flex items-center gap-1">
-            <i class="fa-solid fa-satellite"></i> ESRI World Imagery
-          </span>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 2: DIREKTORI MASJID VIEW -->
-    <section id="tab-direktori" class="hidden flex-1 p-3 sm:p-6 pb-24 max-w-7xl mx-auto w-full">
-      
-      <!-- Toolbar Controls -->
-      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 mb-5">
-        <div class="flex flex-col md:flex-row gap-3 items-center justify-between">
-          
-          <!-- Search Input -->
-          <div class="relative w-full md:w-80">
-            <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-            <input type="text" id="dir-search-input" oninput="handleSearch(this.value)" placeholder="Cari Masjid, Takmir, atau Alamat..." 
-                   class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 text-xs sm:text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-teal">
-          </div>
-
-          <!-- Filters & Sorting -->
-          <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
-            <!-- Filter Desa -->
-            <select id="dir-desa-filter" onchange="handleDesaFilter(this.value)" class="bg-slate-50 border border-slate-200 text-xs sm:text-sm rounded-xl px-3 py-2 focus:ring-2 focus:ring-brand-teal text-slate-700 font-medium">
-              <option value="ALL">Seluruh Desa (10 Desa)</option>
-              <option value="Pabelan">Desa Pabelan</option>
-              <option value="Kartasura">Desa Kartasura</option>
-              <option value="Ngadirejo">Desa Ngadirejo</option>
-              <option value="Singopuran">Desa Singopuran</option>
-              <option value="Gatak">Desa Gatak</option>
-              <option value="Makamhaji">Desa Makamhaji</option>
-              <option value="Gonilan">Desa Gonilan</option>
-              <option value="Kertonatan">Desa Kertonatan</option>
-              <option value="Wirogunan">Desa Wirogunan</option>
-              <option value="Pucangan">Desa Pucangan</option>
-            </select>
-
-            <!-- Sorting Dropdown -->
-            <select id="dir-sort-by" onchange="handleSortChange(this.value)" class="bg-slate-50 border border-slate-200 text-xs sm:text-sm rounded-xl px-3 py-2 focus:ring-2 focus:ring-brand-teal text-slate-700 font-medium">
-              <option value="default">Urutan Standar (Wakaf-Mu ID)</option>
-              <option value="distance">📍 Terdekat dari Saya</option>
-              <option value="jamaah">🌙 Jamaah Subuh Terbanyak</option>
-              <option value="tanah">📐 Luas Tanah Terluas</option>
-            </select>
-
-            <!-- Quick Export PDF Mobile -->
-            <button onclick="printPDF()" class="sm:hidden px-3 py-2 bg-brand-teal text-brand-darkNavy text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm">
-              <i class="fa-solid fa-print"></i>
-              <span>PDF</span>
-            </button>
-            <button onclick="exportCSV()" class="sm:hidden px-3 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-1.5">
-              <i class="fa-solid fa-file-csv"></i>
-              <span>CSV</span>
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Directory Cards Grid -->
-      <div id="mosque-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- JS dynamically renders MD3 Mosque Cards here -->
-      </div>
-    </section>
-
-  </main>
-
-  <!-- BOTTOM NAVIGATION BAR (2 TABS EXCLUSIVELY) -->
-  <nav class="no-print fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 shadow-lg">
-    <div class="max-w-md mx-auto flex items-center justify-around h-16 px-4">
-      
-      <!-- Tab 1: Peta -->
-      <button onclick="switchTab('peta')" id="nav-btn-peta" class="flex flex-col items-center justify-center w-full h-full text-brand-navy font-bold transition">
-        <div id="nav-indicator-peta" class="w-12 h-7 rounded-full bg-brand-teal/20 text-brand-navy flex items-center justify-center mb-0.5 transition-all duration-300">
-          <i class="fa-solid fa-map-location-dot text-lg"></i>
-        </div>
-        <span class="text-[11px]">Peta Satelit</span>
-      </button>
-
-      <!-- Tab 2: Direktori -->
-      <button onclick="switchTab('direktori')" id="nav-btn-direktori" class="flex flex-col items-center justify-center w-full h-full text-slate-400 font-medium transition">
-        <div id="nav-indicator-direktori" class="w-12 h-7 rounded-full bg-transparent flex items-center justify-center mb-0.5 transition-all duration-300">
-          <i class="fa-solid fa-layer-group text-lg"></i>
-        </div>
-        <span class="text-[11px]">Direktori</span>
-      </button>
-
-    </div>
-  </nav>
-
-  <!-- DETAIL MODAL / BOTTOM SHEET (MATERIAL DESIGN 3) -->
-  <div id="detail-modal" class="no-print fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity">
-    <div class="bg-white w-full max-w-xl rounded-t-3xl sm:rounded-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom duration-300">
-      
-      <!-- Modal Header -->
-      <div class="sticky top-0 bg-gradient-to-r from-brand-navy to-brand-darkNavy text-white p-5 rounded-t-3xl sm:rounded-t-3xl flex items-start justify-between z-10 shadow-md">
-        <div>
-          <div class="flex items-center gap-2 mb-1">
-            <span id="modal-wakaf-id" class="px-2.5 py-0.5 rounded-full bg-brand-gold text-brand-darkNavy text-[10px] font-extrabold uppercase tracking-wider">
-              WKF-KTS-001
-            </span>
-            <span id="modal-desa-chip" class="px-2.5 py-0.5 rounded-full bg-brand-teal/20 text-brand-teal border border-brand-teal/30 text-[10px] font-semibold">
-              Desa Pabelan
-            </span>
-          </div>
-          <h2 id="modal-nama" class="text-lg sm:text-xl font-extrabold text-white">Masjid Hajjah Nuriyah Shabran</h2>
-          <p id="modal-alamat" class="text-xs text-slate-300 mt-1 flex items-center gap-1">
-            <i class="fa-solid fa-location-dot text-brand-teal"></i>
-            <span>Jl. Ahmad Yani, Pabelan, Kartasura</span>
-          </p>
-        </div>
-        <button onclick="closeDetailModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-
-      <!-- Modal Body -->
-      <div class="p-5 space-y-5 text-xs sm:text-sm">
-
-        <!-- Grid Stat Quick Cards -->
-        <div class="grid grid-cols-3 gap-3">
-          <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-2xl text-center">
-            <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Luas Tanah</span>
-            <span id="modal-luas-tanah" class="text-sm font-extrabold text-brand-navy">2.500 m²</span>
-          </div>
-          <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-2xl text-center">
-            <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Luas Bangunan</span>
-            <span id="modal-luas-bangunan" class="text-sm font-extrabold text-brand-navy">1.200 m²</span>
-          </div>
-          <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-2xl text-center">
-            <span class="text-[10px] text-emerald-700 font-semibold uppercase tracking-wider block">Jamaah Subuh</span>
-            <span id="modal-jamaah" class="text-sm font-extrabold text-emerald-700">~180 Orang</span>
-          </div>
-        </div>
-
-        <!-- Visual Bar Comparison -->
-        <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl">
-          <div class="flex justify-between text-xs font-semibold mb-1.5 text-slate-700">
-            <span>Rasio Bangunan vs Tanah</span>
-            <span id="modal-rasio-text" class="text-brand-navy">48% Terbangun</span>
-          </div>
-          <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden flex">
-            <div id="modal-rasio-bar" class="h-full bg-gradient-to-r from-brand-teal to-brand-navy" style="width: 48%"></div>
-          </div>
-        </div>
-
-        <!-- Pengurus Contacts (Takmir & Remaja) -->
-        <div class="space-y-3">
-          <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-2">
-            <i class="fa-solid fa-user-shield text-brand-teal"></i> Kontak Pengurus Masjid
-          </h3>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <!-- Takmir Card -->
-            <div class="bg-white border border-slate-200 p-3 rounded-2xl flex items-center justify-between shadow-sm">
-              <div>
-                <span class="text-[10px] font-bold text-slate-400 block uppercase">Ketua Takmir</span>
-                <span id="modal-takmir-nama" class="font-bold text-slate-800 text-xs sm:text-sm block">Ust. Ahmad Fauzi</span>
-                <span id="modal-takmir-phone" class="text-[11px] text-slate-500 font-mono">+62 812-3456-7801</span>
-              </div>
-              <a id="modal-takmir-wa-btn" href="#" target="_blank" class="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition">
-                <i class="fa-brands fa-whatsapp text-sm"></i>
-                <span>WA</span>
-              </a>
+    <!-- TOP MATERIAL APP BAR -->
+    <header id="app-topbar" class="bg-brand-navy text-white shadow-md z-30 flex-none sticky top-0">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-teal/20 border border-brand-teal/40 flex items-center justify-center text-brand-teal font-bold text-xl shadow-inner">
+                    <i class="fa-solid font-bold text-brand-gold fa-mosque"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold tracking-tight leading-tight flex items-center gap-2">
+                        MasjidMu Kartasura
+                        <span class="bg-brand-gold text-brand-navy text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">2026</span>
+                    </h1>
+                    <p class="text-xs text-emerald-200/90 font-medium">Pondok Hajjah Nuriyah Shabran - UMS</p>
+                </div>
             </div>
 
-            <!-- Remaja Masjid Card -->
-            <div class="bg-white border border-slate-200 p-3 rounded-2xl flex items-center justify-between shadow-sm">
-              <div>
-                <span class="text-[10px] font-bold text-slate-400 block uppercase">Ketua Remaja (Risma)</span>
-                <span id="modal-remaja-nama" class="font-bold text-slate-800 text-xs sm:text-sm block">Fathur Rahman</span>
-                <span id="modal-remaja-phone" class="text-[11px] text-slate-500 font-mono">+62 856-7890-1201</span>
-              </div>
-              <a id="modal-remaja-wa-btn" href="#" target="_blank" class="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition">
-                <i class="fa-brands fa-whatsapp text-sm"></i>
-                <span>WA</span>
-              </a>
+            <!-- GPS STATUS BADGE & QUICK REFRESH -->
+            <div class="flex items-center gap-2">
+                <div id="gps-status-badge" class="px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 bg-red-500/20 text-red-200 border border-red-400/30 transition-all duration-300">
+                    <span class="w-2 h-2 rounded-full bg-red-400 animate-pulse" id="gps-dot"></span>
+                    <span id="gps-text">🔴 GPS: NON-AKTIF</span>
+                </div>
+                <button onclick="requestGPSLocation()" title="Perbarui Lokasi GPS" class="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors active:scale-95">
+                    <i class="fa-solid fa-crosshairs text-sm"></i>
+                </button>
             </div>
-          </div>
         </div>
 
-        <!-- Coordinates Box -->
-        <div class="bg-slate-900 text-slate-200 p-3.5 rounded-2xl space-y-1 font-mono text-xs border border-slate-800">
-          <div class="flex justify-between items-center text-slate-400 text-[10px] font-sans font-bold uppercase tracking-wider">
-            <span>Koordinat GIS GPS</span>
-            <span id="modal-distance-badge" class="text-brand-teal font-bold">📍 0.0 km dari lokasi</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-slate-400">Decimal:</span>
-            <span id="modal-coord-dec" class="font-bold text-brand-gold">-7.558210, 110.771630</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-slate-400">Format DMS:</span>
-            <span id="modal-coord-dms" class="text-slate-300">7°33'29.6"S 110°46'17.9"E</span>
-          </div>
-        </div>
+        <!-- QUICK SEARCH & VILLAGE FILTER BAR -->
+        <div id="filter-bar" class="bg-brand-navy/95 border-t border-white/10 px-4 py-2 text-xs">
+            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row gap-2 items-center justify-between">
+                <!-- Search Input -->
+                <div class="relative w-full sm:w-72">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
+                    <input type="text" id="search-input" onkeyup="handleFilterChange()" placeholder="Cari nama masjid, alamat, takmir..." 
+                           class="w-full bg-slate-900/60 text-white placeholder-slate-400 text-xs rounded-full pl-8 pr-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-teal border border-slate-700">
+                </div>
 
-        <!-- Action Buttons -->
-        <div class="flex gap-2 pt-2">
-          <a id="modal-gmaps-btn" href="#" target="_blank" class="flex-1 py-3 bg-brand-navy hover:bg-brand-darkNavy text-white font-bold rounded-xl text-center flex items-center justify-center gap-2 shadow-md transition">
-            <i class="fa-solid fa-diamond-turn-right text-brand-teal text-base"></i>
-            <span>Buka Rute Google Maps</span>
-          </a>
-        </div>
+                <!-- Filter & Sort Options -->
+                <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar py-0.5">
+                    <!-- Village Filter Dropdown -->
+                    <select id="village-filter" onchange="handleFilterChange()" class="bg-slate-900/60 text-emerald-200 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-teal">
+                        <option value="ALL">Semua Desa (10 Desa)</option>
+                        <option value="Pabelan">Desa Pabelan</option>
+                        <option value="Kartasura">Desa Kartasura</option>
+                        <option value="Ngadirejo">Desa Ngadirejo</option>
+                        <option value="Singopuran">Desa Singopuran</option>
+                        <option value="Gatak">Desa Gatak</option>
+                        <option value="Makamhaji">Desa Makamhaji</option>
+                        <option value="Gonilan">Desa Gonilan</option>
+                        <option value="Kertonatan">Desa Kertonatan</option>
+                        <option value="Wirogunan">Desa Wirogunan</option>
+                        <option value="Pucangan">Desa Pucangan</option>
+                    </select>
 
-      </div>
-    </div>
-  </div>
+                    <!-- Sort Dropdown -->
+                    <select id="sort-filter" onchange="handleFilterChange()" class="bg-slate-900/60 text-emerald-200 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-teal">
+                        <option value="distance">Urutkan: Terdekat</option>
+                        <option value="name">Urutkan: Nama (A-Z)</option>
+                        <option value="jamaah">Urutkan: Jamaah Subuh</option>
+                        <option value="land">Urutkan: Luas Tanah</option>
+                    </select>
 
-  <!-- PRINT REPORT SECTION (FORMATED FOR PRINT / PDF EXPORT ONLY) -->
-  <div id="print-area" class="hidden">
-    <div style="text-align: center; margin-bottom: 20px; border-bottom: 3px double #000; padding-bottom: 12px;">
-      <h2 style="font-size: 18px; font-weight: bold; margin: 0; text-transform: uppercase;">PONDOK H. NUR IYAH SHABRAN MUHAMMADIYAH</h2>
-      <h3 style="font-size: 14px; font-weight: bold; margin: 4px 0 0 0;">LAPORAN INVENTARISASI & PEMETAAN MASJID MUHAMMADIYAH KECAMATAN KARTASURA</h3>
-      <p style="font-size: 11px; margin: 4px 0 0 0; color: #444;">Tahun Akademik 2026 • 30 Lokasi Masjid di 10 Desa/Kelurahan</p>
-    </div>
-
-    <table style="width: 100%; border-collapse: collapse; font-size: 10px; font-family: sans-serif;">
-      <thead>
-        <tr style="background-color: #f2f2f2; text-align: left;">
-          <th style="border: 1px solid #999; padding: 6px;">No</th>
-          <th style="border: 1px solid #999; padding: 6px;">ID Wakaf-Mu</th>
-          <th style="border: 1px solid #999; padding: 6px;">Nama Masjid</th>
-          <th style="border: 1px solid #999; padding: 6px;">Desa</th>
-          <th style="border: 1px solid #999; padding: 6px;">Luas Tanah</th>
-          <th style="border: 1px solid #999; padding: 6px;">Luas Bangunan</th>
-          <th style="border: 1px solid #999; padding: 6px;">Jamaah Subuh</th>
-          <th style="border: 1px solid #999; padding: 6px;">Ketua Takmir (WA)</th>
-          <th style="border: 1px solid #999; padding: 6px;">Ketua Remaja (WA)</th>
-          <th style="border: 1px solid #999; padding: 6px;">Koordinat DMS</th>
-        </tr>
-      </thead>
-      <tbody id="print-table-body">
-        <!-- JS populates rows -->
-      </tbody>
-    </table>
-
-    <div style="margin-top: 30px; display: flex; justify-content: space-between; font-size: 11px;">
-      <div>
-        <p>Dicetak secara otomatis dari:</p>
-        <p><strong>Aplikasi MasjidMu Kartasura (Pondok Shabran 2026)</strong></p>
-      </div>
-      <div style="text-align: center; width: 200px;">
-        <p>Kartasura, <span id="print-date"></span></p>
-        <p style="margin-top: 50px;"><strong>( Tim Pengembang Shabran )</strong></p>
-      </div>
-    </div>
-  </div>
-
-  <!-- APPLICATION JAVASCRIPT LOGIC -->
-  <script>
-    // ==========================================
-    // 1. DATASET PERMANEN 30 MASJID MUHAMMADIYAH
-    // ==========================================
-    const mosquesData = [
-      // DESA PABELAN (3 Masjid)
-      {
-        id: 1, wakafId: "WKF-KTS-001", nama: "Masjid Hajjah Nuriyah Shabran", desa: "Pabelan",
-        alamat: "Jl. Ahmad Yani, Saripan, Pabelan, Kartasura", lat: -7.558210, lng: 110.771630, dms: "7°33'29.6\"S 110°46'17.9\"E",
-        jamaahSubuh: 180, takmirNama: "Ust. Ahmad Fauzi", takmirWA: "6281234567801",
-        remajaNama: "Fathur Rahman", remajaWA: "6285678901201", luasTanah: 2500, luasBangunan: 1200
-      },
-      {
-        id: 2, wakafId: "WKF-KTS-002", nama: "Masjid Sudirman UMS", desa: "Pabelan",
-        alamat: "Kampus 1 UMS, Jl. A. Yani, Pabelan, Kartasura", lat: -7.556420, lng: 110.773120, dms: "7°33'23.1\"S 110°46'23.2\"E",
-        jamaahSubuh: 350, takmirNama: "Drs. H. Mulyono", takmirWA: "6281234567802",
-        remajaNama: "Rizky Pratama", remajaWA: "6285678901202", luasTanah: 3200, luasBangunan: 1800
-      },
-      {
-        id: 3, wakafId: "WKF-KTS-003", nama: "Masjid Al-Amanah Pabelan", desa: "Pabelan",
-        alamat: "Dukuh Mendungan RT 02/04, Pabelan, Kartasura", lat: -7.559800, lng: 110.768900, dms: "7°33'35.3\"S 110°46'08.0\"E",
-        jamaahSubuh: 90, takmirNama: "H. Slamet Riyadi", takmirWA: "6281234567803",
-        remajaNama: "Irfan Hakim", remajaWA: "6285678901203", luasTanah: 650, luasBangunan: 420
-      },
-
-      // DESA KARTASURA (3 Masjid)
-      {
-        id: 4, wakafId: "WKF-KTS-004", nama: "Masjid Al-Fattah Kartasura", desa: "Kartasura",
-        alamat: "Jl. Boyolali-Solo, Ngendraprasta, Kartasura", lat: -7.561200, lng: 110.751100, dms: "7°33'40.3\"S 110°45'04.0\"E",
-        jamaahSubuh: 140, takmirNama: "Ust. Nur Hidayat", takmirWA: "6281234567804",
-        remajaNama: "Bagus Setiawan", remajaWA: "6285678901204", luasTanah: 1100, luasBangunan: 750
-      },
-      {
-        id: 5, wakafId: "WKF-KTS-005", nama: "Masjid At-Taqwa Kartasura", desa: "Kartasura",
-        alamat: "Jl. Ahmad Yani No. 45, Kartasura", lat: -7.563500, lng: 110.754200, dms: "7°33'48.6\"S 110°45'15.1\"E",
-        jamaahSubuh: 110, takmirNama: "H. Sunardi", takmirWA: "6281234567805",
-        remajaNama: "Aditya Putra", remajaWA: "6285678901205", luasTanah: 850, luasBangunan: 600
-      },
-      {
-        id: 6, wakafId: "WKF-KTS-006", nama: "Masjid Al-Hidayah Kartasura", desa: "Kartasura",
-        alamat: "Krapyak RT 01/09, Kartasura", lat: -7.558900, lng: 110.748500, dms: "7°33'32.0\"S 110°44'54.6\"E",
-        jamaahSubuh: 75, takmirNama: "Drs. Wahyudi", takmirWA: "6281234567806",
-        remajaNama: "Zaky Mubarak", remajaWA: "6285678901206", luasTanah: 500, luasBangunan: 350
-      },
-
-      // DESA NGADIREJO (3 Masjid)
-      {
-        id: 7, wakafId: "WKF-KTS-007", nama: "Masjid Mujahidin Ngadirejo", desa: "Ngadirejo",
-        alamat: "Dukuh Ngadirejo RT 03/02, Kartasura", lat: -7.567100, lng: 110.759200, dms: "7°34'01.6\"S 110°45'33.1\"E",
-        jamaahSubuh: 130, takmirNama: "Ust. Triyono", takmirWA: "6281234567807",
-        remajaNama: "Wildan Ali", remajaWA: "6285678901207", luasTanah: 920, luasBangunan: 680
-      },
-      {
-        id: 8, wakafId: "WKF-KTS-008", nama: "Masjid Baitul Ma'mur Ngadirejo", desa: "Ngadirejo",
-        alamat: "Dukuh Tempel RT 01/05, Ngadirejo, Kartasura", lat: -7.569500, lng: 110.762100, dms: "7°34'10.2\"S 110°45'43.6\"E",
-        jamaahSubuh: 95, takmirNama: "H. Budi Santoso", takmirWA: "6281234567808",
-        remajaNama: "Hanif Azhar", remajaWA: "6285678901208", luasTanah: 780, luasBangunan: 500
-      },
-      {
-        id: 9, wakafId: "WKF-KTS-009", nama: "Masjid An-Nuur Ngadirejo", desa: "Ngadirejo",
-        alamat: "Dukuh Mulyorejo, Ngadirejo, Kartasura", lat: -7.564800, lng: 110.763500, dms: "7°33'53.3\"S 110°45'48.6\"E",
-        jamaahSubuh: 80, takmirNama: "Sugeng Widodo", takmirWA: "6281234567809",
-        remajaNama: "Faisal Umar", remajaWA: "6285678901209", luasTanah: 600, luasBangunan: 400
-      },
-
-      // DESA SINGOPURAN (3 Masjid)
-      {
-        id: 10, wakafId: "WKF-KTS-010", nama: "Masjid Al-Ikhlas Singopuran", desa: "Singopuran",
-        alamat: "Dukuh Singopuran RT 02/03, Kartasura", lat: -7.553200, lng: 110.762000, dms: "7°33'11.5\"S 110°45'43.2\"E",
-        jamaahSubuh: 115, takmirNama: "Ust. Muhsin", takmirWA: "6281234567810",
-        remajaNama: "Aris Kurniawan", remajaWA: "6285678901210", luasTanah: 890, luasBangunan: 620
-      },
-      {
-        id: 11, wakafId: "WKF-KTS-011", nama: "Masjid Ar-Rahman Singopuran", desa: "Singopuran",
-        alamat: "Dukuh Saripan RT 04/01, Singopuran, Kartasura", lat: -7.551500, lng: 110.765400, dms: "7°33'05.4\"S 110°45'55.4\"E",
-        jamaahSubuh: 90, takmirNama: "H. Hartono", takmirWA: "6281234567811",
-        remajaNama: "Dimas Satria", remajaWA: "6285678901211", luasTanah: 720, luasBangunan: 480
-      },
-      {
-        id: 12, wakafId: "WKF-KTS-012", nama: "Masjid Al-Kautsar Singopuran", desa: "Singopuran",
-        alamat: "Jl. Singopuran Utama No. 12, Kartasura", lat: -7.554800, lng: 110.758800, dms: "7°33'17.3\"S 110°45'31.7\"E",
-        jamaahSubuh: 70, takmirNama: "Agus Supriyanto", takmirWA: "6281234567812",
-        remajaNama: "Galih Permana", remajaWA: "6285678901212", luasTanah: 540, luasBangunan: 380
-      },
-
-      // DESA GATAK (3 Masjid)
-      {
-        id: 13, wakafId: "WKF-KTS-013", nama: "Masjid Al-Mustaqim Gatak", desa: "Gatak",
-        alamat: "Dukuh Gatak RT 01/01, Kartasura", lat: -7.572100, lng: 110.748000, dms: "7°34'19.6\"S 110°44'52.8\"E",
-        jamaahSubuh: 125, takmirNama: "Ust. Subhan", takmirWA: "6281234567813",
-        remajaNama: "Hilman Zaki", remajaWA: "6285678901213", luasTanah: 1050, luasBangunan: 700
-      },
-      {
-        id: 14, wakafId: "WKF-KTS-014", nama: "Masjid Baiturrahim Gatak", desa: "Gatak",
-        alamat: "Dukuh Tegalrejo, Gatak, Kartasura", lat: -7.574500, lng: 110.751200, dms: "7°34'28.2\"S 110°45'04.3\"E",
-        jamaahSubuh: 85, takmirNama: "H. Yosuto", takmirWA: "6281234567814",
-        remajaNama: "Rendy Ahmad", remajaWA: "6285678901214", luasTanah: 680, luasBangunan: 450
-      },
-      {
-        id: 15, wakafId: "WKF-KTS-015", nama: "Masjid Syuhada Gatak", desa: "Gatak",
-        alamat: "Dukuh Sraten RT 03/04, Gatak, Kartasura", lat: -7.570200, lng: 110.753800, dms: "7°34'12.7\"S 110°45'13.7\"E",
-        jamaahSubuh: 100, takmirNama: "Joko Purwanto", takmirWA: "6281234567815",
-        remajaNama: "Kevin Ardiansyah", remajaWA: "6285678901215", luasTanah: 800, luasBangunan: 520
-      },
-
-      // DESA MAKAMHAJI (3 Masjid)
-      {
-        id: 16, wakafId: "WKF-KTS-016", nama: "Masjid Al-Furqan Makamhaji", desa: "Makamhaji",
-        alamat: "Jl. Joko Tingkir, Makamhaji, Kartasura", lat: -7.568500, lng: 110.779200, dms: "7°34'06.6\"S 110°46'45.1\"E",
-        jamaahSubuh: 160, takmirNama: "Ust. Danang", takmirWA: "6281234567816",
-        remajaNama: "Luthfi Hakim", remajaWA: "6285678901216", luasTanah: 1350, luasBangunan: 900
-      },
-      {
-        id: 17, wakafId: "WKF-KTS-017", nama: "Masjid Al-Hikmah Makamhaji", desa: "Makamhaji",
-        alamat: "Dukuh Windan RT 02/07, Makamhaji, Kartasura", lat: -7.571000, lng: 110.783000, dms: "7°34'15.6\"S 110°46'58.8\"E",
-        jamaahSubuh: 120, takmirNama: "H. Bambang", takmirWA: "6281234567817",
-        remajaNama: "Naufal Zaidan", remajaWA: "6285678901217", luasTanah: 950, luasBangunan: 650
-      },
-      {
-        id: 18, wakafId: "WKF-KTS-018", nama: "Masjid Darussalam Makamhaji", desa: "Makamhaji",
-        alamat: "Dukuh Pajang Indah, Makamhaji, Kartasura", lat: -7.565400, lng: 110.781500, dms: "7°33'55.4\"S 110°46'53.4\"E",
-        jamaahSubuh: 90, takmirNama: "Eko Setyawan", takmirWA: "6281234567818",
-        remajaNama: "Oky Saputra", remajaWA: "6285678901218", luasTanah: 700, luasBangunan: 480
-      },
-
-      // DESA GONILAN (3 Masjid)
-      {
-        id: 19, wakafId: "WKF-KTS-019", nama: "Masjid Al-Manar Gonilan", desa: "Gonilan",
-        alamat: "Dukuh Gonilan RT 01/02, Kartasura", lat: -7.551100, lng: 110.774500, dms: "7°33'04.0\"S 110°46'28.2\"E",
-        jamaahSubuh: 170, takmirNama: "Ust. Kholid", takmirWA: "6281234567819",
-        remajaNama: "Pradipta Utama", remajaWA: "6285678901219", luasTanah: 1150, luasBangunan: 780
-      },
-      {
-        id: 20, wakafId: "WKF-KTS-020", nama: "Masjid Al-Huda Gonilan", desa: "Gonilan",
-        alamat: "Jl. Cendrawasih, Gonilan, Kartasura", lat: -7.548900, lng: 110.777000, dms: "7°32'56.0\"S 110°46'37.2\"E",
-        jamaahSubuh: 85, takmirNama: "H. Sukirman", takmirWA: "6281234567820",
-        remajaNama: "Qaisar Ali", remajaWA: "6285678901220", luasTanah: 620, luasBangunan: 420
-      },
-      {
-        id: 21, wakafId: "WKF-KTS-021", nama: "Masjid Uswatun Hasanah Gonilan", desa: "Gonilan",
-        alamat: "Dukuh Nilagraha RT 04/05, Gonilan, Kartasura", lat: -7.553500, lng: 110.778800, dms: "7°33'12.6\"S 110°46'43.7\"E",
-        jamaahSubuh: 105, takmirNama: "Drs. Herman", takmirWA: "6281234567821",
-        remajaNama: "Rahmat Hidayat", remajaWA: "6285678901221", luasTanah: 840, luasBangunan: 560
-      },
-
-      // DESA KERTONATAN (3 Masjid)
-      {
-        id: 22, wakafId: "WKF-KTS-022", nama: "Masjid Baitul Jannah Kertonatan", desa: "Kertonatan",
-        alamat: "Jl. Semarang-Solo, Kertonatan, Kartasura", lat: -7.545200, lng: 110.742000, dms: "7°32'42.7\"S 110°44'31.2\"E",
-        jamaahSubuh: 110, takmirNama: "Ust. Zaenal", takmirWA: "6281234567822",
-        remajaNama: "Syafiq Ahmad", remajaWA: "6285678901222", luasTanah: 980, luasBangunan: 640
-      },
-      {
-        id: 23, wakafId: "WKF-KTS-023", nama: "Masjid Al-Mutaqin Kertonatan", desa: "Kertonatan",
-        alamat: "Dukuh Kertonatan RT 02/01, Kartasura", lat: -7.547800, lng: 110.745500, dms: "7°32'52.1\"S 110°44'43.8\"E",
-        jamaahSubuh: 95, takmirNama: "H. Kustono", takmirWA: "6281234567823",
-        remajaNama: "Taufik Hidayat", remajaWA: "6285678901223", luasTanah: 750, luasBangunan: 500
-      },
-      {
-        id: 24, wakafId: "WKF-KTS-024", nama: "Masjid As-Salam Kertonatan", desa: "Kertonatan",
-        alamat: "Dukuh Kebonbaru, Kertonatan, Kartasura", lat: -7.543000, lng: 110.746200, dms: "7°32'34.8\"S 110°44'46.3\"E",
-        jamaahSubuh: 75, takmirNama: "Wawan Setiadi", takmirWA: "6281234567824",
-        remajaNama: "Umam Al-Faruq", remajaWA: "6285678901224", luasTanah: 580, luasBangunan: 390
-      },
-
-      // DESA WIROGUNAN (3 Masjid)
-      {
-        id: 25, wakafId: "WKF-KTS-025", nama: "Masjid Al-Falah Wirogunan", desa: "Wirogunan",
-        alamat: "Dukuh Wirogunan RT 01/03, Kartasura", lat: -7.562000, lng: 110.738000, dms: "7°33'43.2\"S 110°44'16.8\"E",
-        jamaahSubuh: 135, takmirNama: "Ust. Ismail", takmirWA: "6281234567825",
-        remajaNama: "Viki Ramadhan", remajaWA: "6285678901225", luasTanah: 1000, luasBangunan: 720
-      },
-      {
-        id: 26, wakafId: "WKF-KTS-026", nama: "Masjid Baiturrahman Wirogunan", desa: "Wirogunan",
-        alamat: "Dukuh Purwogondo, Wirogunan, Kartasura", lat: -7.564500, lng: 110.741200, dms: "7°33'52.2\"S 110°44'28.3\"E",
-        jamaahSubuh: 100, takmirNama: "H. Maryanto", takmirWA: "6281234567826",
-        remajaNama: "Wahyu Prasetyo", remajaWA: "6285678901226", luasTanah: 820, luasBangunan: 530
-      },
-      {
-        id: 27, wakafId: "WKF-KTS-027", nama: "Masjid At-Tawwab Wirogunan", desa: "Wirogunan",
-        alamat: "Dukuh Nglano, Wirogunan, Kartasura", lat: -7.559500, lng: 110.740500, dms: "7°33'34.2\"S 110°44'25.8\"E",
-        jamaahSubuh: 80, takmirNama: "Suparno", takmirWA: "6281234567827",
-        remajaNama: "Yahya Ayyash", remajaWA: "6285678901227", luasTanah: 610, luasBangunan: 410
-      },
-
-      // DESA PUCANGAN (3 Masjid)
-      {
-        id: 28, wakafId: "WKF-KTS-028", nama: "Masjid Al-Jihad Pucangan", desa: "Pucangan",
-        alamat: "Jl. Kartasura-Semarang, Pucangan, Kartasura", lat: -7.550100, lng: 110.749500, dms: "7°33'00.4\"S 110°44'58.2\"E",
-        jamaahSubuh: 150, takmirNama: "Ust. Ridwan", takmirWA: "6281234567828",
-        remajaNama: "Zidan Irfan", remajaWA: "6285678901228", luasTanah: 1200, luasBangunan: 800
-      },
-      {
-        id: 29, wakafId: "WKF-KTS-029", nama: "Masjid Al-Ihsan Pucangan", desa: "Pucangan",
-        alamat: "Dukuh Pucangan RT 03/02, Kartasura", lat: -7.547500, lng: 110.752000, dms: "7°32'51.0\"S 110°45'07.2\"E",
-        jamaahSubuh: 90, takmirNama: "H. Sarwono", takmirWA: "6281234567829",
-        remajaNama: "Alif Bagas", remajaWA: "6285678901229", luasTanah: 730, luasBangunan: 490
-      },
-      {
-        id: 30, wakafId: "WKF-KTS-030", nama: "Masjid Al-Istiqomah Pucangan", desa: "Pucangan",
-        alamat: "Dukuh Blimbangan, Pucangan, Kartasura", lat: -7.552200, lng: 110.754000, dms: "7°33'07.9\"S 110°45'14.4\"E",
-        jamaahSubuh: 110, takmirNama: "Tri Handoko", takmirWA: "6281234567830",
-        remajaNama: "Bintang Pamungkas", remajaWA: "6285678901230", luasTanah: 860, luasBangunan: 570
-      }
-    ];
-
-    // ==========================================
-    // 2. STATE MANAGEMENT APLIKASI
-    // ==========================================
-    let map = null;
-    let mapMarkers = [];
-    let userLocationMarker = null;
-    let userAccuracyCircle = null;
-    let userPos = null; // {lat, lng}
-    let currentTab = 'peta';
-    let searchQuery = '';
-    let selectedDesa = 'ALL';
-    let sortBy = 'default';
-
-    // ==========================================
-    // 3. LOGIKA ALGORITMA HAVERSINE DISTANCE
-    // ==========================================
-    function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371; // Radius bumi dalam KM
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R * c; // Kembalikan jarak dalam km
-    }
-
-    function getFormattedDistance(mLat, mLng) {
-      if (!userPos) return null;
-      const dist = calculateHaversineDistance(userPos.lat, userPos.lng, mLat, mLng);
-      if (dist < 1) {
-        return Math.round(dist * 1000) + ' m';
-      }
-      return dist.toFixed(2) + ' km';
-    }
-
-    // ==========================================
-    // 4. PEMBUATAN IKON MARKER DOME SVG KUSTOM
-    // ==========================================
-    function createDomeMarkerIcon() {
-      const svgString = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 56" width="38" height="44">
-          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000000" flood-opacity="0.5"/>
-          </filter>
-          <g filter="url(#shadow)">
-            <!-- Outer Pin Shape -->
-            <path d="M 24 52 C 24 52 42 34 42 22 C 42 10 34 2 24 2 C 14 2 6 10 6 22 C 6 34 24 52 24 52 Z" 
-                  fill="#2F3185" stroke="#FFFFFF" stroke-width="2.5"/>
-            <!-- Inner Circle Teal -->
-            <circle cx="24" cy="21" r="13.5" fill="#1CBDB3"/>
-            <!-- Dome Structure Gold -->
-            <path d="M 24 10 C 26 13 28.5 14 30.5 14.5 C 27.5 16 25.5 18.5 24 23 C 22.5 18.5 20.5 16 17.5 14.5 C 19.5 14 22 13 24 10 Z" fill="#FFB800"/>
-            <!-- Small Moon Crescent -->
-            <circle cx="24" cy="8" r="1.5" fill="#FFB800"/>
-          </g>
-        </svg>
-      `;
-      return L.divIcon({
-        className: 'custom-dome-icon',
-        html: svgString,
-        iconSize: [38, 44],
-        iconAnchor: [19, 44],
-        popupAnchor: [0, -42]
-      });
-    }
-
-    // ==========================================
-    // 5. INISIALISASI PETA LEAFLET (ESRI SATELLITE)
-    // ==========================================
-    function initMap() {
-      // Pusat Kartasura (-7.558210, 110.771630)
-      map = L.map('map', {
-        zoomControl: false,
-        attributionControl: false
-      }).setView([-7.558210, 110.771630], 15);
-
-      // Layer 1: Citra Satelit ESRI World Imagery
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19,
-        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-      }).addTo(map);
-
-      // Layer 2: Overlay Label Jalan & Batas Wilayah ESRI (mempermudah identifikasi lokasi satelit)
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19
-      }).addTo(map);
-
-      // Tambahkan Kontrol Zoom di pojok kanan atas
-      L.control.zoom({ position: 'topright' }).addTo(map);
-
-      // Render semua marker masjid
-      renderMapMarkers();
-
-      // Memicu recalculate size Leaflet agar peta ESRI langsung muncul penuh di halaman depan saat pertama dimuat
-      setTimeout(() => {
-        if (map) {
-          map.invalidateSize();
-        }
-      }, 200);
-    }
-
-    function renderMapMarkers() {
-      // Hapus marker lama
-      mapMarkers.forEach(m => map.removeLayer(m));
-      mapMarkers = [];
-
-      const filtered = getFilteredMosques();
-      const domeIcon = createDomeMarkerIcon();
-
-      filtered.forEach(m => {
-        const marker = L.marker([m.lat, m.lng], { icon: domeIcon }).addTo(map);
-
-        // Tooltip Popup saat hover/click
-        const distText = getFormattedDistance(m.lat, m.lng);
-        const popupHTML = `
-          <div class="p-1 text-center font-sans">
-            <span class="text-[9px] font-bold text-brand-navy uppercase tracking-wider block bg-brand-teal/20 px-2 py-0.5 rounded-full mb-1">
-              ${m.wakafId} • Desa ${m.desa}
-            </span>
-            <h4 class="font-extrabold text-xs text-slate-800 leading-tight mb-1">${m.nama}</h4>
-            <p class="text-[10px] text-slate-500 mb-2">${m.alamat}</p>
-            ${distText ? `<span class="text-[10px] font-bold text-emerald-600 block mb-2">📍 ${distText} dari lokasi Anda</span>` : ''}
-            <button onclick="openDetailModal(${m.id})" class="w-full py-1.5 bg-brand-navy text-white text-[11px] font-bold rounded-lg shadow hover:bg-brand-darkNavy transition">
-              Detail & Kontak WA
-            </button>
-          </div>
-        `;
-
-        marker.bindPopup(popupHTML);
-        mapMarkers.push(marker);
-      });
-
-      // Update Teks Counter Peta
-      document.getElementById('map-counter-text').innerText = `${filtered.length} Masjid`;
-    }
-
-    // ==========================================
-    // 6. GEOLOCATION GPS TRACKING & DISTANCE
-    // ==========================================
-    function startGPSTracking() {
-      if (!('geolocation' in navigator)) {
-        updateGPSBadge(false, 'GPS TAK DIDUKUNG');
-        return;
-      }
-
-      navigator.geolocation.watchPosition(
-        (position) => {
-          userPos = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-
-          updateGPSBadge(true, 'GPS: AKTIF');
-          updateUserLocationOnMap(userPos.lat, userPos.lng, position.coords.accuracy);
-
-          // Update Tampilan Jarak jika berada di Tab Direktori atau Peta
-          if (currentTab === 'direktori') {
-            renderDirectoryCards();
-          } else {
-            renderMapMarkers();
-          }
-        },
-        (error) => {
-          console.warn('GPS Error:', error.message);
-          updateGPSBadge(false, 'GPS: NON-AKTIF');
-        },
-        {
-          enableHighAccuracy: true,
-          maximumAge: 10000,
-          timeout: 10000
-        }
-      );
-    }
-
-    function updateGPSBadge(isActive, text) {
-      const badge = document.getElementById('gps-status-badge');
-      const dot = document.getElementById('gps-dot');
-      const textEl = document.getElementById('gps-text');
-
-      textEl.innerText = text;
-
-      if (isActive) {
-        badge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 backdrop-blur-sm transition-all duration-300";
-        dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block gps-active-pulse";
-      } else {
-        badge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-200 border border-red-400/30 backdrop-blur-sm transition-all duration-300";
-        dot.className = "w-2.5 h-2.5 rounded-full bg-red-500 inline-block";
-      }
-    }
-
-    function updateUserLocationOnMap(lat, lng, accuracy) {
-      if (!map) return;
-
-      // Marker Posisi User (Blue Pulse Ring)
-      if (!userLocationMarker) {
-        const userIcon = L.divIcon({
-          className: 'user-location-marker',
-          html: `
-            <div class="relative flex items-center justify-center w-6 h-6">
-              <span class="absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75 animate-ping"></span>
-              <span class="relative inline-flex rounded-full h-4 w-4 bg-sky-600 border-2 border-white shadow-lg"></span>
+                    <button onclick="resetFilters()" class="text-slate-300 hover:text-white text-xs px-2 py-1 bg-white/10 rounded-md">
+                        Reset
+                    </button>
+                </div>
             </div>
-          `,
-          iconSize: [24, 24],
-          iconAnchor: [12, 12]
-        });
+        </div>
+    </header>
 
-        userLocationMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map);
-        userLocationMarker.bindPopup('<b class="text-xs">Lokasi Anda Saat Ini</b>');
-      } else {
-        userLocationMarker.setLatLng([lat, lng]);
-      }
+    <!-- PRINTABLE REPORT HEADER (Only visible in Print/PDF Mode) -->
+    <div class="print-header hidden">
+        <h1 style="font-size: 18pt; font-weight: bold; margin: 0; color: #2F3185;">LAPORAN PENDATAAN MASJID MUHAMMADIYAH</h1>
+        <h2 style="font-size: 14pt; margin: 4px 0;">KECAMATAN KARTASURA - KABUPATEN SUKOHARJO</h2>
+        <p style="font-size: 10pt; color: #555; margin: 0;">Program Pengabdian Pondok Hajjah Nuriyah n UMS 2026 | Total: 30 Masjid</p>
+    </div>
 
-      // Lingkaran Akurasi Geolocation
-      if (!userAccuracyCircle) {
-        userAccuracyCircle = L.circle([lat, lng], {
-          radius: accuracy,
-          color: '#38bdf8',
-          fillColor: '#38bdf8',
-          fillOpacity: 0.15,
-          weight: 1
-        }).addTo(map);
-      } else {
-        userAccuracyCircle.setLatLng([lat, lng]);
-        userAccuracyCircle.setRadius(accuracy);
-      }
-    }
+    <!-- MAIN CONTENT VIEW CONTAINER -->
+    <main class="flex-1 relative overflow-hidden bg-slate-100">
 
-    function recenterMapToUser() {
-      if (userPos && map) {
-        map.flyTo([userPos.lat, userPos.lng], 16, { animate: true, duration: 1 });
-        if (userLocationMarker) userLocationMarker.openPopup();
-      } else {
-        alert('Meminta akses GPS lokasi... Pastikan GPS HP Anda aktif.');
-      }
-    }
-
-    // ==========================================
-    // 7. FILTERING & SORTING DATASET
-    // ==========================================
-    function getFilteredMosques() {
-      let result = mosquesData.filter(m => {
-        const matchesDesa = (selectedDesa === 'ALL') || (m.desa.toLowerCase() === selectedDesa.toLowerCase());
-        const q = searchQuery.toLowerCase();
-        const matchesQuery = !q || 
-          m.nama.toLowerCase().includes(q) || 
-          m.alamat.toLowerCase().includes(q) || 
-          m.takmirNama.toLowerCase().includes(q) || 
-          m.wakafId.toLowerCase().includes(q);
-        return matchesDesa && matchesQuery;
-      });
-
-      // Sorting Logic
-      if (sortBy === 'distance' && userPos) {
-        result.sort((a, b) => {
-          const distA = calculateHaversineDistance(userPos.lat, userPos.lng, a.lat, a.lng);
-          const distB = calculateHaversineDistance(userPos.lat, userPos.lng, b.lat, b.lng);
-          return distA - distB;
-        });
-      } else if (sortBy === 'jamaah') {
-        result.sort((a, b) => b.jamaahSubuh - a.jamaahSubuh);
-      } else if (sortBy === 'tanah') {
-        result.sort((a, b) => b.luasTanah - a.luasTanah);
-      } else {
-        // Default sort by Wakaf ID
-        result.sort((a, b) => a.id - b.id);
-      }
-
-      return result;
-    }
-
-    function handleSearch(val) {
-      searchQuery = val;
-      // Sinkronkan input
-      document.getElementById('map-search-input').value = val;
-      document.getElementById('dir-search-input').value = val;
-
-      renderMapMarkers();
-      renderDirectoryCards();
-    }
-
-    function handleDesaFilter(val) {
-      selectedDesa = val;
-      // Sinkronkan dropdown
-      document.getElementById('map-desa-filter').value = val;
-      document.getElementById('dir-desa-filter').value = val;
-
-      renderMapMarkers();
-      renderDirectoryCards();
-    }
-
-    function handleSortChange(val) {
-      sortBy = val;
-      renderDirectoryCards();
-    }
-
-    // ==========================================
-    // 8. RENDER DIREKTORI KARTU MD3
-    // ==========================================
-    function renderDirectoryCards() {
-      const container = document.getElementById('mosque-cards-grid');
-      const filtered = getFilteredMosques();
-
-      if (filtered.length === 0) {
-        container.innerHTML = `
-          <div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-dashed border-slate-300">
-            <i class="fa-solid fa-mosque text-4xl mb-2 text-slate-300"></i>
-            <p class="font-semibold text-sm">Tidak ditemukan masjid yang sesuai filter.</p>
-          </div>
-        `;
-        return;
-      }
-
-      let html = '';
-      filtered.forEach(m => {
-        const distText = getFormattedDistance(m.lat, m.lng);
-        const percentRatio = Math.round((m.luasBangunan / m.luasTanah) * 100);
-
-        html += `
-          <div class="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md border border-slate-200/80 transition-all flex flex-col justify-between group">
+        <!-- 1. MAP VIEW (PETA SATELIT ESRI) -->
+        <section id="map-view" class="absolute inset-0 w-full h-full block">
+            <div id="map"></div>
             
-            <div>
-              <!-- Header Badges -->
-              <div class="flex items-center justify-between gap-2 mb-2">
-                <span class="px-2.5 py-0.5 rounded-full bg-brand-navy text-white font-extrabold text-[10px] tracking-wider uppercase">
-                  ${m.wakafId}
-                </span>
-                <span class="px-2.5 py-0.5 rounded-full bg-brand-teal/15 text-brand-darkNavy font-semibold text-[10px] border border-brand-teal/30">
-                  Desa ${m.desa}
-                </span>
-              </div>
+            <!-- Map Controls Overlay -->
+            <div class="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
+                <!-- Layer Toggle Button -->
+                <button onclick="toggleMapLayer()" class="bg-white/90 hover:bg-white text-brand-navy shadow-lg font-semibold text-xs px-3 py-2 rounded-xl border border-slate-200 backdrop-blur-md flex items-center gap-2 active:scale-95 transition-all">
+                    <i class="fa-solid fa-layer-group text-brand-teal"></i>
+                    <span id="layer-btn-text">Peta Satelit ESRI</span>
+                </button>
+                <button onclick="centern()" class="bg-white/90 hover:bg-white text-brand-navy shadow-lg font-semibold text-xs px-3 py-2 rounded-xl border border-slate-200 backdrop-blur-md flex items-center gap-2 active:scale-95 transition-all">
+                    <i class="fa-solid fa-location-crosshairs text-brand-gold"></i>
+                    <span>Ke Pondok n</span>
+                </button>
+            </div>
+        </section>
 
-              <!-- Title & Address -->
-              <h3 class="font-extrabold text-base text-slate-800 group-hover:text-brand-navy transition leading-tight mb-1">
-                ${m.nama}
-              </h3>
-              <p class="text-xs text-slate-500 mb-3 line-clamp-2 flex items-start gap-1">
-                <i class="fa-solid fa-location-dot text-brand-teal text-xs mt-0.5 shrink-0"></i>
-                <span>${m.alamat}</span>
-              </p>
+        <!-- 2. DIRECTORY VIEW (TABEL & KARTU DIRECTORY) -->
+        <section id="directory-view" class="absolute inset-0 w-full h-full hidden overflow-y-auto p-4 sm:p-6 pb-24">
+            <div class="max-w-7xl mx-auto space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-brand-navy flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-brand-teal"></i> Direktori Masjid Muhammadiyah
+                        </h2>
+                        <p class="text-xs text-slate-500">Menampilkan <span id="count-display" class="font-bold text-brand-navy">30</span> masjid terdaftar di Kartasura</p>
+                    </div>
 
-              <!-- Quick Info Chips -->
-              <div class="grid grid-cols-2 gap-2 mb-3">
-                <div class="bg-slate-50 border border-slate-100 p-2 rounded-xl">
-                  <span class="text-[9px] text-slate-400 font-semibold block uppercase">Tanah / Bangunan</span>
-                  <span class="text-xs font-bold text-slate-700">${m.luasTanah.toLocaleString('id-ID')} m² / ${m.luasBangunan.toLocaleString('id-ID')} m²</span>
+                    <div id="action-buttons-view" class="flex items-center gap-2">
+                        <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm flex items-center gap-1.5 transition-colors">
+                            <i class="fa-solid fa-file-csv"></i> Ekspor CSV
+                        </button>
+                        <button onclick="triggerPrintPDF()" class="bg-brand-navy hover:bg-slate-800 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm flex items-center gap-1.5 transition-colors">
+                            <i class="fa-solid fa-print"></i> Cetak Laporan PDF
+                        </button>
+                    </div>
                 </div>
-                <div class="bg-emerald-50/70 border border-emerald-100 p-2 rounded-xl">
-                  <span class="text-[9px] text-emerald-600 font-semibold block uppercase">Jamaah Subuh</span>
-                  <span class="text-xs font-bold text-emerald-700">~${m.jamaahSubuh} Jamaah</span>
-                </div>
-              </div>
 
-              <!-- Distance Badge (if GPS active) -->
-              ${distText ? `
-                <div class="mb-3 px-3 py-1 bg-sky-50 text-sky-700 border border-sky-100 rounded-xl text-xs font-bold flex items-center justify-between">
-                  <span>📍 Jarak dari Lokasi Anda:</span>
-                  <span class="font-extrabold text-sky-800">${distText}</span>
+                <!-- Grid View of Mosque Cards -->
+                <div id="mosque-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Cards will be dynamically injected here -->
                 </div>
-              ` : ''}
+            </div>
+        </section>
 
-              <!-- Pengurus Quick Names -->
-              <div class="text-xs text-slate-600 space-y-1 mb-4 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <div class="flex justify-between items-center">
-                  <span class="text-[11px] text-slate-400 font-medium">Takmir:</span>
-                  <span class="font-semibold text-slate-800">${m.takmirNama}</span>
+        <!-- 3. REPORT & STATS VIEW (ANALISIS & REKAPITULASI) -->
+        <section id="report-view" class="absolute inset-0 w-full h-full hidden overflow-y-auto p-4 sm:p-6 pb-24">
+            <div class="max-w-7xl mx-auto space-y-6">
+                <!-- Summary KPI Cards -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <span class="text-xs text-slate-500 font-medium">Total Masjid</span>
+                        <div class="text-2xl font-extrabold text-brand-navy mt-1" id="kpi-total">30</div>
+                        <span class="text-[10px] text-emerald-600 font-semibold mt-2">10 Desa Kartasura</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <span class="text-xs text-slate-500 font-medium">Total Jamaah Subuh</span>
+                        <div class="text-2xl font-extrabold text-brand-teal mt-1" id="kpi-jamaah">0</div>
+                        <span class="text-[10px] text-slate-400 mt-2">Rata-rata per hari</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <span class="text-xs text-slate-500 font-medium">Total Luas Tanah</span>
+                        <div class="text-2xl font-extrabold text-brand-gold mt-1" id="kpi-land">0 m²</div>
+                        <span class="text-[10px] text-slate-400 mt-2">Aset Wakaf Muhammadiyah</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <span class="text-xs text-slate-500 font-medium">Total Luas Bangunan</span>
+                        <div class="text-2xl font-extrabold text-indigo-600 mt-1" id="kpi-building">0 m²</div>
+                        <span class="text-[10px] text-slate-400 mt-2">Kapasitas Fisik Bangunan</span>
+                    </div>
                 </div>
-                <div class="flex justify-between items-center">
-                  <span class="text-[11px] text-slate-400 font-medium">Remaja (Risma):</span>
-                  <span class="font-semibold text-slate-800">${m.remajaNama}</span>
+
+                <!-- Detailed Summary Table for Printable Output -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-table text-brand-navy"></i> Tabel Pendataan Lengkap 30 Masjid
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left border-collapse print-table">
+                            <thead class="bg-slate-100 text-slate-700 font-semibold uppercase border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3">ID Wakaf</th>
+                                    <th class="p-3">Nama Masjid</th>
+                                    <th class="p-3">Desa</th>
+                                    <th class="p-3">Luas (Tanah/Bgn)</th>
+                                    <th class="p-3">Jamaah Subuh</th>
+                                    <th class="p-3">Takmir / Kontak</th>
+                                    <th class="p-3">Koordinat (DMS)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-table-body" class="divide-y divide-slate-100">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-              </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MATERIAL BOTTOM SHEET MODAL (MOSQUE DETAIL) -->
+    <div id="detail-sheet" class="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none">
+        <!-- Backdrop -->
+        <div id="sheet-backdrop" onclick="closeDetailModal()" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+        <!-- Sheet Panel -->
+        <div id="sheet-panel" class="bottom-sheet hidden-sheet relative w-full max-w-2xl mx-auto bg-white rounded-t-3xl shadow-2xl p-6 pointer-events-auto overflow-y-auto max-h-[85vh] border-t border-slate-100">
+            <!-- Sheet Handle -->
+            <div class="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeDetailModal()"></div>
+
+            <div class="flex items-start justify-between">
+                <div>
+                    <span id="modal-wakaf-id" class="inline-block px-2.5 py-0.5 rounded-md bg-brand-teal/15 text-brand-teal font-extrabold text-[11px] uppercase tracking-wide">
+                        WKF-KTS-000
+                    </span>
+                    <h2 id="modal-title" class="text-xl font-bold text-slate-900 mt-1">Nama Masjid</h2>
+                    <p id="modal-desa" class="text-xs font-semibold text-brand-navy flex items-center gap-1.5 mt-0.5">
+                        <i class="fa-solid fa-location-dot text-brand-gold"></i> Desa Pabelan, Kartasura
+                    </p>
+                </div>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
             </div>
 
-            <!-- Action Buttons Grid -->
-            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
-              <button onclick="openDetailModal(${m.id})" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1">
-                <i class="fa-solid fa-circle-info text-brand-teal"></i>
-                <span>Detail</span>
-              </button>
-              
-              <a href="https://wa.me/${m.takmirWA}?text=Assalamu%27alaikum%20${encodeURIComponent(m.takmirNama)}%20(Takmir%20${encodeURIComponent(m.nama)})" target="_blank" 
-                 class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
-                <i class="fa-brands fa-whatsapp text-sm"></i>
-                <span>WA Takmir</span>
-              </a>
+            <div class="mt-4 space-y-4 text-xs text-slate-600">
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <p class="font-medium text-slate-700" id="modal-address">Alamat lengkap...</p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-emerald-50 border border-emerald-100 p-2.5 rounded-xl">
+                        <span class="block text-[10px] text-emerald-600 font-semibold">Jarak GPS</span>
+                        <span id="modal-distance" class="text-sm font-extrabold text-emerald-800">-- km</span>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-100 p-2.5 rounded-xl">
+                        <span class="block text-[10px] text-blue-600 font-semibold">Jamaah Subuh</span>
+                        <span id="modal-subuh" class="text-sm font-extrabold text-blue-800">0 Orgs</span>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-100 p-2.5 rounded-xl">
+                        <span class="block text-[10px] text-amber-600 font-semibold">Luas Tanah</span>
+                        <span id="modal-land" class="text-sm font-extrabold text-amber-800">0 m²</span>
+                    </div>
+                </div>
+
+                <!-- Contacts -->
+                <div class="space-y-2 border-t border-slate-100 pt-3">
+                    <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wide">Pengurus & Takmir Masjid</h4>
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+                        <div>
+                            <p class="font-bold text-slate-800" id="modal-takmir-name">Ketua Takmir</p>
+                            <p class="text-[11px] text-slate-500">Ketua Takmir Masjid</p>
+                        </div>
+                        <a id="modal-takmir-wa" href="#" target="_blank" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-xs flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-brands fa-whatsapp text-sm"></i> WA Takmir
+                        </a>
+                    </div>
+
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+                        <div>
+                            <p class="font-bold text-slate-800" id="modal-remaja-name">Ketua Remaja</p>
+                            <p class="text-[11px] text-slate-500">Ketua Remaja Masjid (PRM)</p>
+                        </div>
+                        <a id="modal-remaja-wa" href="#" target="_blank" class="px-3 py-1.5 bg-brand-teal hover:bg-teal-600 text-white rounded-lg font-semibold text-xs flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-brands fa-whatsapp text-sm"></i> WA Remaja
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Coordinates Details -->
+                <div class="bg-slate-100 p-3 rounded-xl space-y-1 font-mono text-[11px]">
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Koordinat Desimal:</span>
+                        <span id="modal-coords-dec" class="font-semibold text-slate-800"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Koordinat DMS:</span>
+                        <span id="modal-coords-dms" class="font-semibold text-slate-800"></span>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <a id="modal-gmaps-btn" href="#" target="_blank" class="w-full py-3 bg-brand-navy hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-md transition-transform active:scale-98">
+                    <i class="fa-solid fa-diamond-turn-right text-brand-gold"></i> Navigasi Rute Google Maps
+                </a>
             </div>
+        </div>
+    </div>
 
-          </div>
-        `;
-      });
+    <!-- MATERIAL BOTTOM NAVIGATION BAR (ANDROID STYLE) -->
+    <nav id="bottom-nav" class="bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 z-40 shadow-lg">
+        <div class="max-w-md mx-auto flex justify-around items-center h-16">
+            <!-- Tab 1: Map -->
+            <button onclick="switchTab('map')" id="nav-btn-map" class="flex flex-col items-center justify-center w-full h-full text-brand-teal font-semibold text-xs transition-colors">
+                <i class="fa-solid fa-map-location-dot text-lg mb-0.5"></i>
+                <span>Peta Satelit</span>
+            </button>
 
-      container.innerHTML = html;
-    }
+            <!-- Tab 2: Directory -->
+            <button onclick="switchTab('directory')" id="nav-btn-directory" class="flex flex-col items-center justify-center w-full h-full text-slate-400 font-semibold text-xs hover:text-brand-navy transition-colors">
+                <i class="fa-solid fa-border-all text-lg mb-0.5"></i>
+                <span>Direktori</span>
+            </button>
 
-    // ==========================================
-    // 9. DETAIL MODAL POPUP (MATERIAL DESIGN 3)
-    // ==========================================
-    function openDetailModal(id) {
-      const m = mosquesData.find(x => x.id === id);
-      if (!m) return;
+            <!-- Tab 3: Reports -->
+            <button onclick="switchTab('report')" id="nav-btn-report" class="flex flex-col items-center justify-center w-full h-full text-slate-400 font-semibold text-xs hover:text-brand-navy transition-colors">
+                <i class="fa-solid fa-chart-pie text-lg mb-0.5"></i>
+                <span>Laporan Stat</span>
+            </button>
+        </div>
+    </nav>
 
-      document.getElementById('modal-wakaf-id').innerText = m.wakafId;
-      document.getElementById('modal-desa-chip').innerText = `Desa ${m.desa}`;
-      document.getElementById('modal-nama').innerText = m.nama;
-      document.getElementById('modal-alamat').innerHTML = `<i class="fa-solid fa-location-dot text-brand-teal"></i> ${m.alamat}`;
-      
-      document.getElementById('modal-luas-tanah').innerText = `${m.luasTanah.toLocaleString('id-ID')} m²`;
-      document.getElementById('modal-luas-bangunan').innerText = `${m.luasBangunan.toLocaleString('id-ID')} m²`;
-      document.getElementById('modal-jamaah').innerText = `~${m.jamaahSubuh} Orang`;
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed top-16 right-4 z-[2000] space-y-2 pointer-events-none"></div>
 
-      // Rasio Bangunan/Tanah
-      const ratio = Math.min(100, Math.round((m.luasBangunan / m.luasTanah) * 100));
-      document.getElementById('modal-rasio-text').innerText = `${ratio}% Terbangun`;
-      document.getElementById('modal-rasio-bar').style.width = `${ratio}%`;
 
-      // Pengurus
-      document.getElementById('modal-takmir-nama').innerText = m.takmirNama;
-      document.getElementById('modal-takmir-phone').innerText = `+${m.takmirWA}`;
-      document.getElementById('modal-takmir-wa-btn').href = `https://wa.me/${m.takmirWA}?text=Assalamu%27alaikum%20${encodeURIComponent(m.takmirNama)}%20(Takmir%20${encodeURIComponent(m.nama)})`;
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // ==========================================
+        // 1. DATA 30 MASJID MUHAMMADIYAH KARTASURA
+        // ==========================================
+        const MASJID_DATA = [
+            // Desa Pabelan
+            {
+                id: "WKF-KTS-001",
+                name: "Masjid Pondok Shabran UMS",
+                desa: "Pabelan",
+                address: "Jl. Latar Putih No.12, Saripan, Makamhaji, RT. 02/RW. 12, Kecamatan Kartasura, Kabupaten Sukoharjo, Jawa Tengah 57162",
+                landArea: 1850,
+                buildingArea: 1200,
+                subuhJamaah: 140,
+                takmirName: "KH. Yayuli, M.P.I.",
+                takmirWa: "6281234567801",
+                remajaName: "Maftukhin Exsan",
+                remajaWa: "6285712345601",
+                lat: -7.56582,
+                lng: 110.77657
+            },
+            {
+                id: "WKF-KTS-002",
+                name: "Masjid Sudalmiyah Rais UMS",
+                desa: "Pabelan",
+                address: "Kampus 2 UMS, Jl. A. Yani, Pabelan, Kartasura, Sukoharjo",
+                landArea: 2500,
+                buildingArea: 2100,
+                subuhJamaah: 320,
+                takmirName: "Drs. H. Syamsul Hidayat, M.Ag",
+                takmirWa: "6281234567802",
+                remajaName: "Fathur Rahman",
+                remajaWa: "6285712345602",
+                lat: -7.55941,
+                lng: 110.77254
+            },
+            {
+                id: "WKF-KTS-003",
+                name: "Masjid Al-Hidayah Pabelan",
+                desa: "Pabelan",
+                address: "Gatak RT 02/RW 04, Pabelan, Kartasura, Sukoharjo",
+                landArea: 650,
+                buildingArea: 450,
+                subuhJamaah: 75,
+                takmirName: "H. Suparno, S.Pd",
+                takmirWa: "6281234567803",
+                remajaName: "Rizal Arifin",
+                remajaWa: "6285712345603",
+                lat: -7.55620,
+                lng: 110.76450
+            },
 
-      document.getElementById('modal-remaja-nama').innerText = m.remajaNama;
-      document.getElementById('modal-remaja-phone').innerText = `+${m.remajaWA}`;
-      document.getElementById('modal-remaja-wa-btn').href = `https://wa.me/${m.remajaWA}?text=Assalamu%27alaikum%20${encodeURIComponent(m.remajaNama)}%20(Ketua%20Remaja%20${encodeURIComponent(m.nama)})`;
+            // Desa Kartasura
+            {
+                id: "WKF-KTS-004",
+                name: "Masjid Raya Al-Fitrah Kartasura",
+                desa: "Kartasura",
+                address: "Jl. Slamet Riyadi No. 120, Kartasura, Sukoharjo",
+                landArea: 1400,
+                buildingArea: 950,
+                subuhJamaah: 180,
+                takmirName: "H. Ahmad Zaki, S.E",
+                takmirWa: "6281234567804",
+                remajaName: "Bilal Ramadhan",
+                remajaWa: "6285712345604",
+                lat: -7.55120,
+                lng: 110.75380
+            },
+            {
+                id: "WKF-KTS-005",
+                name: "Masjid Al-Ikhlas Sedahromo",
+                desa: "Kartasura",
+                address: "Sedahromo Lor RT 03/RW 07, Kartasura, Sukoharjo",
+                landArea: 520,
+                buildingArea: 380,
+                subuhJamaah: 60,
+                takmirName: "Ust. M. Ridwan",
+                takmirWa: "6281234567805",
+                remajaName: "Irfan Hakim",
+                remajaWa: "6285712345605",
+                lat: -7.55350,
+                lng: 110.75120
+            },
+            {
+                id: "WKF-KTS-006",
+                name: "Masjid At-Taqwa Kartasura",
+                desa: "Kartasura",
+                address: "Tegalpacing RT 01/RW 02, Kartasura, Sukoharjo",
+                landArea: 780,
+                buildingArea: 550,
+                subuhJamaah: 95,
+                takmirName: "H. Bambang Sugihto",
+                takmirWa: "6281234567806",
+                remajaName: "Faris Naufal",
+                remajaWa: "6285712345606",
+                lat: -7.54980,
+                lng: 110.75540
+            },
 
-      // Koordinat
-      document.getElementById('modal-coord-dec').innerText = `${m.lat.toFixed(6)}, ${m.lng.toFixed(6)}`;
-      document.getElementById('modal-coord-dms').innerText = m.dms;
+            // Desa Ngadirejo
+            {
+                id: "WKF-KTS-007",
+                name: "Masjid Al-Jihad Ngadirejo",
+                desa: "Ngadirejo",
+                address: "Jl. A. Yani No. 88, Ngadirejo, Kartasura, Sukoharjo",
+                landArea: 920,
+                buildingArea: 680,
+                subuhJamaah: 110,
+                takmirName: "H. Sutrisno, M.Pd",
+                takmirWa: "6281234567807",
+                remajaName: "Yusuf Al-Ghifari",
+                remajaWa: "6285712345607",
+                lat: -7.56210,
+                lng: 110.74850
+            },
+            {
+                id: "WKF-KTS-008",
+                name: "Masjid Nurul Huda Ngadirejo",
+                desa: "Ngadirejo",
+                address: "Ngrapak RT 04/RW 03, Ngadirejo, Kartasura, Sukoharjo",
+                landArea: 480,
+                buildingArea: 350,
+                subuhJamaah: 50,
+                takmirName: "Ust. Ali Imron",
+                takmirWa: "6281234567808",
+                remajaName: "Hafidz Kurniawan",
+                remajaWa: "6285712345608",
+                lat: -7.56450,
+                lng: 110.74610
+            },
+            {
+                id: "WKF-KTS-009",
+                name: "Masjid Baiturrahman Ngadirejo",
+                desa: "Ngadirejo",
+                address: "Kunden RT 02/RW 01, Ngadirejo, Kartasura, Sukoharjo",
+                landArea: 610,
+                buildingArea: 420,
+                subuhJamaah: 70,
+                takmirName: "H. Sunardi",
+                takmirWa: "6281234567809",
+                remajaName: "Zaky Mubarok",
+                remajaWa: "6285712345609",
+                lat: -7.56100,
+                lng: 110.74320
+            },
 
-      // Jarak Badge
-      const distText = getFormattedDistance(m.lat, m.lng);
-      document.getElementById('modal-distance-badge').innerText = distText ? `📍 ${distText} dari lokasi` : '📍 GPS Non-Aktif';
+            // Desa Singopuran
+            {
+                id: "WKF-KTS-010",
+                name: "Masjid At-Taqwa Singopuran",
+                desa: "Singopuran",
+                address: "Singopuran RT 01/RW 02, Kartasura, Sukoharjo",
+                landArea: 1100,
+                buildingArea: 800,
+                subuhJamaah: 130,
+                takmirName: "Drs. H. Slamet Rahardjo",
+                takmirWa: "6281234567810",
+                remajaName: "Aditya Pratama",
+                remajaWa: "6285712345610",
+                lat: -7.54580,
+                lng: 110.76210
+            },
+            {
+                id: "WKF-KTS-011",
+                name: "Masjid Al-Muqarrabin Singopuran",
+                desa: "Singopuran",
+                address: "KRanggan RT 03/RW 05, Singopuran, Kartasura, Sukoharjo",
+                landArea: 550,
+                buildingArea: 400,
+                subuhJamaah: 65,
+                takmirName: "H. Sukirno",
+                takmirWa: "6281234567811",
+                remajaName: "Danang Setiawan",
+                remajaWa: "6285712345611",
+                lat: -7.54820,
+                lng: 110.76500
+            },
+            {
+                id: "WKF-KTS-012",
+                name: "Masjid Istiqomah Singopuran",
+                desa: "Singopuran",
+                address: "Surojo RT 02/RW 04, Singopuran, Kartasura, Sukoharjo",
+                landArea: 430,
+                buildingArea: 320,
+                subuhJamaah: 55,
+                takmirName: "Ust. Wahyudi",
+                takmirWa: "6281234567812",
+                remajaName: "Rifqi Ahmad",
+                remajaWa: "6285712345612",
+                lat: -7.54390,
+                lng: 110.75980
+            },
 
-      // Link Google Maps
-      document.getElementById('modal-gmaps-btn').href = `https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`;
+            // Desa Gatak
+            {
+                id: "WKF-KTS-013",
+                name: "Masjid Al-Falah Gatak",
+                desa: "Gatak",
+                address: "Gatak RT 01/RW 01, Kartasura, Sukoharjo",
+                landArea: 890,
+                buildingArea: 600,
+                subuhJamaah: 105,
+                takmirName: "H. Joko Susilo",
+                takmirWa: "6281234567813",
+                remajaName: "Luthfi Assidiq",
+                remajaWa: "6285712345613",
+                lat: -7.57120,
+                lng: 110.75110
+            },
+            {
+                id: "WKF-KTS-014",
+                name: "Masjid Ar-Rahman Gatak",
+                desa: "Gatak",
+                address: "Tegalsari RT 03/RW 02, Gatak, Kartasura, Sukoharjo",
+                landArea: 620,
+                buildingArea: 440,
+                subuhJamaah: 70,
+                takmirName: "Ust. Triyono",
+                takmirWa: "6281234567814",
+                remajaName: "Arya Bima",
+                remajaWa: "6285712345614",
+                lat: -7.57400,
+                lng: 110.74890
+            },
+            {
+                id: "WKF-KTS-015",
+                name: "Masjid Baitul Makmur Gatak",
+                desa: "Gatak",
+                address: "Kwaren RT 02/RW 03, Gatak, Kartasura, Sukoharjo",
+                landArea: 500,
+                buildingArea: 360,
+                subuhJamaah: 60,
+                takmirName: "H. Moh. Ridho",
+                takmirWa: "6281234567815",
+                remajaName: "Faisal Amir",
+                remajaWa: "6285712345615",
+                lat: -7.56890,
+                lng: 110.75350
+            },
 
-      // Tampilkan Modal
-      const modal = document.getElementById('detail-modal');
-      modal.classList.remove('hidden');
-    }
+            // Desa Makamhaji
+            {
+                id: "WKF-KTS-016",
+                name: "Masjid Al-Hikmah Makamhaji",
+                desa: "Makamhaji",
+                address: "Jl. Joko Tingkir No. 45, Makamhaji, Kartasura, Sukoharjo",
+                landArea: 1350,
+                buildingArea: 980,
+                subuhJamaah: 160,
+                takmirName: "Drs. H. Sugiyanto, M.Ag",
+                takmirWa: "6281234567816",
+                remajaName: "Hanif Abdillah",
+                remajaWa: "6285712345616",
+                lat: -7.56810,
+                lng: 110.78120
+            },
+            {
+                id: "WKF-KTS-017",
+                name: "Masjid Mujahidin Makamhaji",
+                desa: "Makamhaji",
+                address: "Windan RT 02/RW 08, Makamhaji, Kartasura, Sukoharjo",
+                landArea: 740,
+                buildingArea: 510,
+                subuhJamaah: 85,
+                takmirName: "H. Harun Al-Rasyid",
+                takmirWa: "6281234567817",
+                remajaName: "Wildan Sanjaya",
+                remajaWa: "6285712345617",
+                lat: -7.56550,
+                lng: 110.78500
+            },
+            {
+                id: "WKF-KTS-018",
+                name: "Masjid Darussalam Makamhaji",
+                desa: "Makamhaji",
+                address: "Kujon RT 01/RW 04, Makamhaji, Kartasura, Sukoharjo",
+                landArea: 680,
+                buildingArea: 470,
+                subuhJamaah: 75,
+                takmirName: "Ust. Agus Purwanto",
+                takmirWa: "6281234567818",
+                remajaName: "Ibrahim Malik",
+                remajaWa: "6285712345618",
+                lat: -7.57100,
+                lng: 110.77900
+            },
 
-    function closeDetailModal() {
-      document.getElementById('detail-modal').classList.add('hidden');
-    }
+            // Desa Gonilan
+            {
+                id: "WKF-KTS-019",
+                name: "Masjid Al-Barokah Gonilan",
+                desa: "Gonilan",
+                address: "Jl. Garuda No. 12, Gonilan, Kartasura, Sukoharjo",
+                landArea: 960,
+                buildingArea: 720,
+                subuhJamaah: 125,
+                takmirName: "H. Sriyono, S.T",
+                takmirWa: "6281234567819",
+                remajaName: "Naufal Zakariyya",
+                remajaWa: "6285712345619",
+                lat: -7.55150,
+                lng: 110.77880
+            },
+            {
+                id: "WKF-KTS-020",
+                name: "Masjid Nurul Iman Gonilan",
+                desa: "Gonilan",
+                address: "Candi RT 03/RW 02, Gonilan, Kartasura, Sukoharjo",
+                landArea: 580,
+                buildingArea: 410,
+                subuhJamaah: 70,
+                takmirName: "Ust. Suparman",
+                takmirWa: "6281234567820",
+                remajaName: "Taufik Hidayat",
+                remajaWa: "6285712345620",
+                lat: -7.54890,
+                lng: 110.78200
+            },
+            {
+                id: "WKF-KTS-021",
+                name: "Masjid Syuhada Gonilan",
+                desa: "Gonilan",
+                address: "Nilasari RT 01/RW 03, Gonilan, Kartasura, Sukoharjo",
+                landArea: 490,
+                buildingArea: 360,
+                subuhJamaah: 60,
+                takmirName: "H. Dwi Cahyono",
+                takmirWa: "6281234567821",
+                remajaName: "Reza Pahlevi",
+                remajaWa: "6285712345621",
+                lat: -7.55320,
+                lng: 110.77550
+            },
 
-    // ==========================================
-    // 10. NAVIGASI TAB SWITCHING (2 TABS EXCLUSIVELY)
-    // ==========================================
-    function switchTab(tab) {
-      currentTab = tab;
-      
-      const tabPeta = document.getElementById('tab-peta');
-      const tabDir = document.getElementById('tab-direktori');
+            // Desa Kertonatan
+            {
+                id: "WKF-KTS-022",
+                name: "Masjid Al-Mutaqien Kertonatan",
+                desa: "Kertonatan",
+                address: "Kertonatan RT 02/RW 01, Kartasura, Sukoharjo",
+                landArea: 830,
+                buildingArea: 590,
+                subuhJamaah: 90,
+                takmirName: "H. Subagyo, S.H",
+                takmirWa: "6281234567822",
+                remajaName: "Akmal Syarif",
+                remajaWa: "6285712345622",
+                lat: -7.54210,
+                lng: 110.73850
+            },
+            {
+                id: "WKF-KTS-023",
+                name: "Masjid Al-Amien Kertonatan",
+                desa: "Kertonatan",
+                address: "Mulyorejo RT 01/RW 03, Kertonatan, Kartasura, Sukoharjo",
+                landArea: 530,
+                buildingArea: 390,
+                subuhJamaah: 65,
+                takmirName: "Ust. Kholid Mawardi",
+                takmirWa: "6281234567823",
+                remajaName: "Dimas Anggara",
+                remajaWa: "6285712345623",
+                lat: -7.54480,
+                lng: 110.73520
+            },
+            {
+                id: "WKF-KTS-024",
+                name: "Masjid Baitul Jannah Kertonatan",
+                desa: "Kertonatan",
+                address: "Tegalan RT 04/RW 02, Kertonatan, Kartasura, Sukoharjo",
+                landArea: 460,
+                buildingArea: 330,
+                subuhJamaah: 50,
+                takmirName: "H. Wardoyo",
+                takmirWa: "6281234567824",
+                remajaName: "Hamzah Fansuri",
+                remajaWa: "6285712345624",
+                lat: -7.53950,
+                lng: 110.74100
+            },
 
-      const btnPeta = document.getElementById('nav-btn-peta');
-      const btnDir = document.getElementById('nav-btn-direktori');
+            // Desa Wirogunan
+            {
+                id: "WKF-KTS-025",
+                name: "Masjid Al-Mustaqim Wirogunan",
+                desa: "Wirogunan",
+                address: "Wirogunan RT 01/RW 02, Kartasura, Sukoharjo",
+                landArea: 900,
+                buildingArea: 640,
+                subuhJamaah: 100,
+                takmirName: "H. Eko Prasetyo",
+                takmirWa: "6281234567825",
+                remajaName: "Farhan Ali",
+                remajaWa: "6285712345625",
+                lat: -7.57890,
+                lng: 110.76120
+            },
+            {
+                id: "WKF-KTS-026",
+                name: "Masjid Ar-Rasyid Wirogunan",
+                desa: "Wirogunan",
+                address: "Sranten RT 03/RW 01, Wirogunan, Kartasura, Sukoharjo",
+                landArea: 570,
+                buildingArea: 410,
+                subuhJamaah: 65,
+                takmirName: "Ust. Budi Santoso",
+                takmirWa: "6281234567826",
+                remajaName: "Gading Marten",
+                remajaWa: "6285712345626",
+                lat: -7.58120,
+                lng: 110.75800
+            },
+            {
+                id: "WKF-KTS-027",
+                name: "Masjid Al-Huda Wirogunan",
+                desa: "Wirogunan",
+                address: "Klegen RT 02/RW 04, Wirogunan, Kartasura, Sukoharjo",
+                landArea: 470,
+                buildingArea: 340,
+                subuhJamaah: 55,
+                takmirName: "H. Mulyono",
+                takmirWa: "6281234567827",
+                remajaName: "Haidar Musyaffa",
+                remajaWa: "6285712345627",
+                lat: -7.57650,
+                lng: 110.76480
+            },
 
-      const indPeta = document.getElementById('nav-indicator-peta');
-      const indDir = document.getElementById('nav-indicator-direktori');
+            // Desa Pucangan
+            {
+                id: "WKF-KTS-028",
+                name: "Masjid Al-Kautsar Pucangan",
+                desa: "Pucangan",
+                address: "Pucangan RT 02/RW 03, Kartasura, Sukoharjo",
+                landArea: 1020,
+                buildingArea: 760,
+                subuhJamaah: 115,
+                takmirName: "Drs. H. Suwandi",
+                takmirWa: "6281234567828",
+                remajaName: "Irfan Zidny",
+                remajaWa: "6285712345628",
+                lat: -7.53880,
+                lng: 110.74900
+            },
+            {
+                id: "WKF-KTS-029",
+                name: "Masjid Baiturrahim Pucangan",
+                desa: "Pucangan",
+                address: "Krandon RT 01/RW 05, Pucangan, Kartasura, Sukoharjo",
+                landArea: 640,
+                buildingArea: 460,
+                subuhJamaah: 70,
+                takmirName: "Ust. Slamet Widodo",
+                takmirWa: "6281234567829",
+                remajaName: "Jafar Sadiq",
+                remajaWa: "6285712345629",
+                lat: -7.53620,
+                lng: 110.75250
+            },
+            {
+                id: "WKF-KTS-030",
+                name: "Masjid An-Nur Pucangan",
+                desa: "Pucangan",
+                address: "Pule RT 03/RW 01, Pucangan, Kartasura, Sukoharjo",
+                landArea: 510,
+                buildingArea: 370,
+                subuhJamaah: 60,
+                takmirName: "H. Endang Suherman",
+                takmirWa: "6281234567830",
+                remajaName: "Kharisma Jati",
+                remajaWa: "6285712345630",
+                lat: -7.54100,
+                lng: 110.74650
+            }
+        ];
 
-      if (tab === 'peta') {
-        tabPeta.classList.remove('hidden');
-        tabDir.classList.add('hidden');
+        // ==========================================
+        // 2. GLOBAL STATE MANAGEMENT
+        // ==========================================
+        let map;
+        let esriSatLayer, cartoLabelLayer, osmLayer;
+        let isSatelliteActive = true;
+        let userLocation = null; // {lat, lng}
+        let markersGroup = L.layerGroup();
+        let userLocationMarker = null;
+        let activeTab = 'map';
+        let filteredMosques = [...MASJID_DATA];
 
-        btnPeta.className = "flex flex-col items-center justify-center w-full h-full text-brand-navy font-bold transition";
-        btnDir.className = "flex flex-col items-center justify-center w-full h-full text-slate-400 font-medium transition";
+        // ==========================================
+        // 3. INITIALIZATION ON LOAD
+        // ==========================================
+        window.onload = function () {
+            initLeafletMap();
+            requestGPSLocation();
+            renderDirectoryAndReports();
+            registerPWAWorker();
+        };
 
-        indPeta.className = "w-12 h-7 rounded-full bg-brand-teal/20 text-brand-navy flex items-center justify-center mb-0.5 transition-all duration-300";
-        indDir.className = "w-12 h-7 rounded-full bg-transparent flex items-center justify-center mb-0.5 transition-all duration-300";
+        // ==========================================
+        // 4. LEAFLET MAP INITIALIZATION (ESRI SATELLITE)
+        // ==========================================
+        function initLeafletMap() {
+            // Default center: Pondok Shabran UMS (-7.56582008828754, 110.77659231716287)
+            const shabranCoords = [-7.56582008828754, 110.77659231716287];
 
-        // Invalidate map size to fix render issues on tab switch
-        setTimeout(() => {
-          if (map) map.invalidateSize();
-        }, 100);
+            map = L.map('map', {
+                center: shabranCoords,
+                zoom: 14,
+                zoomControl: false
+            });
 
-      } else if (tab === 'direktori') {
-        tabPeta.classList.add('hidden');
-        tabDir.classList.remove('hidden');
+            // Re-add Zoom control to bottom right
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-        btnDir.className = "flex flex-col items-center justify-center w-full h-full text-brand-navy font-bold transition";
-        btnPeta.className = "flex flex-col items-center justify-center w-full h-full text-slate-400 font-medium transition";
+            // Esri World Imagery Satellite Layer
+            esriSatLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+                maxZoom: 19
+            });
 
-        indDir.className = "w-12 h-7 rounded-full bg-brand-teal/20 text-brand-navy flex items-center justify-center mb-0.5 transition-all duration-300";
-        indPeta.className = "w-12 h-7 rounded-full bg-transparent flex items-center justify-center mb-0.5 transition-all duration-300";
+            // Transportation / Road labels overlay
+            cartoLabelLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            });
 
-        renderDirectoryCards();
-      }
-    }
+            // Fallback OpenStreetMap Layer
+            osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            });
 
-    // ==========================================
-    // 11. EKSPOR DATA (PDF LAPORAN & CSV)
-    // ==========================================
-    function exportCSV() {
-      let csvContent = "data:text/csv;charset=utf-8,";
-      csvContent += "ID Wakaf-Mu,Nama Masjid,Desa,Alamat Lengkap,Luas Tanah (m2),Luas Bangunan (m2),Jamaah Subuh,Nama Takmir,WA Takmir,Nama Remaja,WA Remaja,Latitude,Longitude,Koordinat DMS\n";
+            // Initial load ESRI Satellite + Labels
+            esriSatLayer.addTo(map);
+            cartoLabelLayer.addTo(map);
 
-      mosquesData.forEach(m => {
-        const row = [
-          `"${m.wakafId}"`,
-          `"${m.nama}"`,
-          `"${m.desa}"`,
-          `"${m.alamat}"`,
-          m.luasTanah,
-          m.luasBangunan,
-          m.jamaahSubuh,
-          `"${m.takmirNama}"`,
-          `"${m.takmirWA}"`,
-          `"${m.remajaNama}"`,
-          `"${m.remajaWA}"`,
-          m.lat,
-          m.lng,
-          `"${m.dms}"`
-        ].join(",");
-        csvContent += row + "\n";
-      });
+            markersGroup.addTo(map);
+            renderMapMarkers();
 
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "Laporan_MasjidMu_Kartasura_2026.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+            // Invalidate size after DOM stabilizes
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 300);
+        }
 
-    function printPDF() {
-      const tbody = document.getElementById('print-table-body');
-      let html = '';
+        // Toggle Layer (Satelit vs Street Map)
+        function toggleMapLayer() {
+            const btnText = document.getElementById('layer-btn-text');
+            if (isSatelliteActive) {
+                map.removeLayer(esriSatLayer);
+                map.removeLayer(cartoLabelLayer);
+                map.addLayer(osmLayer);
+                btnText.innerText = "Peta Jalan OSM";
+                showToast("Beralih ke Peta Vektor Jalan");
+            } else {
+                map.removeLayer(osmLayer);
+                map.addLayer(esriSatLayer);
+                map.addLayer(cartoLabelLayer);
+                btnText.innerText = "Peta Satelit ESRI";
+                showToast("Beralih ke Peta Satelit ESRI World Imagery");
+            }
+            isSatelliteActive = !isSatelliteActive;
+        }
 
-      mosquesData.forEach((m, idx) => {
-        html += `
-          <tr>
-            <td style="border: 1px solid #999; padding: 5px; text-align: center;">${idx + 1}</td>
-            <td style="border: 1px solid #999; padding: 5px; font-weight: bold;">${m.wakafId}</td>
-            <td style="border: 1px solid #999; padding: 5px; font-weight: bold;">${m.nama}</td>
-            <td style="border: 1px solid #999; padding: 5px;">${m.desa}</td>
-            <td style="border: 1px solid #999; padding: 5px; text-align: right;">${m.luasTanah.toLocaleString('id-ID')} m²</td>
-            <td style="border: 1px solid #999; padding: 5px; text-align: right;">${m.luasBangunan.toLocaleString('id-ID')} m²</td>
-            <td style="border: 1px solid #999; padding: 5px; text-align: center;">~${m.jamaahSubuh}</td>
-            <td style="border: 1px solid #999; padding: 5px;">${m.takmirNama}<br><span style="color:#555;">+${m.takmirWA}</span></td>
-            <td style="border: 1px solid #999; padding: 5px;">${m.remajaNama}<br><span style="color:#555;">+${m.remajaWA}</span></td>
-            <td style="border: 1px solid #999; padding: 5px; font-family: monospace; font-size: 9px;">${m.dms}</td>
-          </tr>
-        `;
-      });
+        function centerShabran() {
+            if (map) {
+                map.flyTo([-7.56582008828754, 110.77658427053589], 16, { animate: true, duration: 1.5 });
+                showToast("Menampilkan Pondok Shabran UMS");
+            }
+        }
 
-      tbody.innerHTML = html;
-      
-      const options = { year: 'numeric', month: 'long', day: 'numeric' };
-      document.getElementById('print-date').innerText = new Date().toLocaleDateString('id-ID', options);
+        // ==========================================
+        // 5. SVG DOME CUSTOM MARKERS
+        // ==========================================
+        function createDomeIconSVG(isShabran = false) {
+            const primaryColor = isShabran ? '#FFB800' : '#1CBDB3';
+            const badgeColor = isShabran ? '#2F3185' : '#2F3185';
 
-      window.print();
-    }
+            const svgString = `
+                <div class="dome-pin-wrapper">
+                    <svg width="42" height="52" viewBox="0 0 42 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Shadow Pin Base -->
+                        <path d="M21 52C21 52 38 34.5 38 21C38 11.6112 30.3888 4 21 4C11.6112 4 4 11.6112 4 21C4 34.5 21 52 21 52Z" fill="${badgeColor}"/>
+                        <!-- Inner Accent Circle -->
+                        <circle cx="21" cy="20" r="14" fill="#FFFFFF"/>
+                        <!-- Mosque Dome & Crescent Moon SVG -->
+                        <path d="M21 9C21.4 9 21.7 9.2 21.9 9.5C23.2 11.2 26 13.5 26 17H16C16 13.5 18.8 11.2 20.1 9.5C20.3 9.2 20.6 9 21 9Z" fill="${primaryColor}"/>
+                        <!-- Crescent Star -->
+                        <path d="M21 7.2C21.8 7.2 22.4 6.6 22.4 5.8C22.4 5 21.8 4.4 21 4.4C20.2 4.4 19.6 5 19.6 5.8C19.6 6.6 20.2 7.2 21 7.2Z" fill="#FFB800"/>
+                        <rect x="15" y="17" width="12" height="6" rx="1" fill="${primaryColor}"/>
+                        <rect x="19" y="19" width="4" height="4" rx="2" fill="#FFFFFF"/>
+                    </svg>
+                </div>
+            `;
 
-    // ==========================================
-    // 12. PWA SERVICE WORKER INLINE REGISTRATION
-    // ==========================================
-    function initPWA() {
-      if ('serviceWorker' in navigator) {
-        const swCode = `
-          const CACHE_NAME = 'masjidmu-v2026';
-          self.addEventListener('install', e => self.skipWaiting());
-          self.addEventListener('activate', e => self.clients.claim());
-          self.addEventListener('fetch', e => {
-            e.respondWith(
-              fetch(e.request).catch(() => caches.match(e.request))
-            );
-          });
-        `;
-        const blob = new Blob([swCode], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(blob);
-        navigator.serviceWorker.register(swUrl).catch(err => console.log('SW Reg Failed:', err));
-      }
-    }
+            return L.divIcon({
+                html: svgString,
+                className: 'custom-dome-icon',
+                iconSize: [42, 52],
+                iconAnchor: [21, 52],
+                popupAnchor: [0, -48]
+            });
+        }
 
-    // ==========================================
-    // 13. BOOTSTRAP INITIATOR ON WINDOW LOAD
-    // ==========================================
-    window.onload = function() {
-      initMap();
-      startGPSTracking();
-      initPWA();
+        function renderMapMarkers() {
+            markersGroup.clearLayers();
 
-      // Close Modal on backdrop click
-      document.getElementById('detail-modal').addEventListener('click', function(e) {
-        if (e.target === this) closeDetailModal();
-      });
-    };
-  </script>
+            filteredMosques.forEach((m) => {
+                const isShabran = m.id === "WKF-KTS-001";
+                const icon = createDomeIconSVG(isShabran);
+
+                const marker = L.marker([m.lat, m.lng], { icon: icon });
+
+                // Leaflet Popup
+                const distText = m.distance ? `${m.distance.toFixed(2)} km` : 'Mengukur GPS...';
+                const popupContent = `
+                    <div class="p-1 font-sans text-xs max-w-[200px]">
+                        <span class="text-[9px] font-bold uppercase text-brand-teal">${m.id}</span>
+                        <h4 class="font-bold text-sm text-slate-900 leading-tight">${m.name}</h4>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Desa ${m.desa}</p>
+                        <div class="mt-2 flex items-center justify-between text-[10px] font-semibold bg-slate-100 p-1.5 rounded">
+                            <span>Subuh: ${m.subuhJamaah} org</span>
+                            <span class="text-brand-navy">${distText}</span>
+                        </div>
+                        <button onclick="openDetailModal('${m.id}')" class="w-full mt-2 py-1.5 bg-brand-navy text-white text-[11px] font-bold rounded hover:bg-slate-800 transition">
+                            Lihat Detail
+                        </button>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                markersGroup.addLayer(marker);
+            });
+        }
+
+        // ==========================================
+        // 6. REAL-TIME GPS TRACKING & HAVERSINE
+        // ==========================================
+        function requestGPSLocation() {
+            const badge = document.getElementById('gps-status-badge');
+            const dot = document.getElementById('gps-dot');
+            const text = document.getElementById('gps-text');
+
+            if ("geolocation" in navigator) {
+                text.innerText = "🟡 MENCARI GPS...";
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+
+                        // Update Badge UI
+                        badge.className = "px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 bg-emerald-500/20 text-emerald-200 border border-emerald-400/30";
+                        dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping";
+                        text.innerText = "🟢 GPS: AKTIF";
+
+                        // Update user marker on map
+                        updateUserMarkerOnMap();
+                        
+                        // Recalculate distances
+                        calculateAllDistances();
+                        handleFilterChange();
+                        showToast("Lokasi GPS berhasil terdeteksi!");
+                    },
+                    (error) => {
+                        console.warn("GPS Error:", error.message);
+                        badge.className = "px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 bg-red-500/20 text-red-200 border border-red-400/30";
+                        dot.className = "w-2 h-2 rounded-full bg-red-400";
+                        text.innerText = "🔴 GPS: NON-AKTIF";
+                        showToast("GPS tidak diizinkan / tidak aktif. Menggunakan referensi default.");
+                    },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            } else {
+                showToast("Browser tidak mendukung Geolocation GPS");
+            }
+        }
+
+        function updateUserMarkerOnMap() {
+            if (!userLocation || !map) return;
+
+            if (userLocationMarker) {
+                map.removeLayer(userLocationMarker);
+            }
+
+            const userIcon = L.divIcon({
+                html: `
+                    <div class="relative flex items-center justify-center w-6 h-6">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-4 w-4 bg-sky-500 border-2 border-white shadow-lg"></span>
+                    </div>
+                `,
+                className: '',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+
+            userLocationMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon }).addTo(map);
+            userLocationMarker.bindPopup('<b class="text-xs">Posisi Anda Saat Ini</b>');
+        }
+
+        // Haversine Formula (KM)
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of Earth in kilometers
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function calculateAllDistances() {
+            if (!userLocation) return;
+            MASJID_DATA.forEach(m => {
+                m.distance = haversineDistance(userLocation.lat, userLocation.lng, m.lat, m.lng);
+            });
+        }
+
+        // Convert Decimal Coordinates to DMS (Degree Minute Second) Format
+        function decToDMS(deg, isLat) {
+            const absolute = Math.abs(deg);
+            const degrees = Math.floor(absolute);
+            const minutesNotTruncated = (absolute - degrees) * 60;
+            const minutes = Math.floor(minutesNotTruncated);
+            const seconds = ((minutesNotTruncated - minutes) * 60).toFixed(1);
+            const direction = deg >= 0 ? (isLat ? 'N' : 'E') : (isLat ? 'S' : 'W');
+            return `${degrees}°${minutes}'${seconds}" ${direction}`;
+        }
+
+        // ==========================================
+        // 7. SEARCH, FILTER & SORT LOGIC
+        // ==========================================
+        function handleFilterChange() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+            const villageTerm = document.getElementById('village-filter').value;
+            const sortTerm = document.getElementById('sort-filter').value;
+
+            filteredMosques = MASJID_DATA.filter(m => {
+                const matchesSearch = m.name.toLowerCase().includes(searchTerm) ||
+                                      m.address.toLowerCase().includes(searchTerm) ||
+                                      m.takmirName.toLowerCase().includes(searchTerm) ||
+                                      m.id.toLowerCase().includes(searchTerm);
+                
+                const matchesVillage = villageTerm === 'ALL' || m.desa === villageTerm;
+
+                return matchesSearch && matchesVillage;
+            });
+
+            // Sorting
+            if (sortTerm === 'distance') {
+                filteredMosques.sort((a, b) => (a.distance || 999) - (b.distance || 999));
+            } else if (sortTerm === 'name') {
+                filteredMosques.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (sortTerm === 'jamaah') {
+                filteredMosques.sort((a, b) => b.subuhJamaah - a.subuhJamaah);
+            } else if (sortTerm === 'land') {
+                filteredMosques.sort((a, b) => b.landArea - a.landArea);
+            }
+
+            // Re-render UI
+            renderDirectoryAndReports();
+            renderMapMarkers();
+        }
+
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('village-filter').value = 'ALL';
+            document.getElementById('sort-filter').value = 'distance';
+            handleFilterChange();
+        }
+
+        // ==========================================
+        // 8. RENDER DIRECTORY & REPORT TAB UI
+        // ==========================================
+        function renderDirectoryAndReports() {
+            const cardsGrid = document.getElementById('mosque-cards-grid');
+            const tableBody = document.getElementById('report-table-body');
+            const countDisplay = document.getElementById('count-display');
+
+            countDisplay.innerText = filteredMosques.length;
+
+            cardsGrid.innerHTML = '';
+            tableBody.innerHTML = '';
+
+            let totalJamaah = 0;
+            let totalLand = 0;
+            let totalBuilding = 0;
+
+            filteredMosques.forEach(m => {
+                totalJamaah += m.subuhJamaah;
+                totalLand += m.landArea;
+                totalBuilding += m.buildingArea;
+
+                const distBadge = m.distance 
+                    ? `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-location-arrow mr-1"></i>${m.distance.toFixed(2)} km</span>`
+                    : `<span class="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full">GPS N/A</span>`;
+
+                // Render Card Item
+                const cardHTML = `
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between gap-2 mb-2">
+                                <span class="bg-brand-navy/10 text-brand-navy text-[10px] font-extrabold px-2 py-0.5 rounded uppercase">${m.id}</span>
+                                ${distBadge}
+                            </div>
+                            <h3 class="font-bold text-slate-900 text-base leading-snug cursor-pointer hover:text-brand-teal" onclick="openDetailModal('${m.id}')">
+                                ${m.name}
+                            </h3>
+                            <p class="text-xs text-brand-teal font-semibold mt-0.5"><i class="fa-solid fa-map-pin text-brand-gold mr-1"></i> Desa ${m.desa}</p>
+                            <p class="text-xs text-slate-500 mt-2 line-clamp-2">${m.address}</p>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                            <div class="text-slate-600">
+                                <span class="block text-[10px] text-slate-400">Jamaah Subuh</span>
+                                <span class="font-bold text-slate-800"><i class="fa-solid fa-users text-brand-teal mr-1"></i>${m.subuhJamaah} Org</span>
+                            </div>
+                            <div class="text-slate-600 text-right">
+                                <span class="block text-[10px] text-slate-400">Luas Tanah</span>
+                                <span class="font-bold text-slate-800">${m.landArea} m²</span>
+                            </div>
+                            <button onclick="openDetailModal('${m.id}')" class="px-3 py-1.5 bg-brand-navy text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition active:scale-95">
+                                Detail
+                            </button>
+                        </div>
+                    </div>
+                `;
+                cardsGrid.insertAdjacentHTML('beforeend', cardHTML);
+
+                // Render Table Row for Reports/PDF
+                const dmsLat = decToDMS(m.lat, true);
+                const dmsLng = decToDMS(m.lng, false);
+
+                const rowHTML = `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-3 font-mono font-bold text-brand-navy">${m.id}</td>
+                        <td class="p-3 font-bold text-slate-900">${m.name}</td>
+                        <td class="p-3 text-slate-600">${m.desa}</td>
+                        <td class="p-3 text-slate-600">${m.landArea} m² / ${m.buildingArea} m²</td>
+                        <td class="p-3 font-semibold text-emerald-700">${m.subuhJamaah} orang</td>
+                        <td class="p-3">
+                            <div class="font-semibold text-slate-800">${m.takmirName}</div>
+                            <a href="https://wa.me/${m.takmirWa}" target="_blank" class="text-emerald-600 hover:underline font-mono text-[11px]"><i class="fa-brands fa-whatsapp"></i> ${m.takmirWa}</a>
+                        </td>
+                        <td class="p-3 font-mono text-[11px] text-slate-500">${dmsLat}, ${dmsLng}</td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', rowHTML);
+            });
+
+            // Update KPI Stats
+            document.getElementById('kpi-total').innerText = filteredMosques.length;
+            document.getElementById('kpi-jamaah').innerText = totalJamaah.toLocaleString('id-ID');
+            document.getElementById('kpi-land').innerText = `${totalLand.toLocaleString('id-ID')} m²`;
+            document.getElementById('kpi-building').innerText = `${totalBuilding.toLocaleString('id-ID')} m²`;
+        }
+
+        // ==========================================
+        // 9. MODAL BOTTOM SHEET LOGIC
+        // ==========================================
+        function openDetailModal(id) {
+            const mosque = MASJID_DATA.find(m => m.id === id);
+            if (!mosque) return;
+
+            document.getElementById('modal-wakaf-id').innerText = mosque.id;
+            document.getElementById('modal-title').innerText = mosque.name;
+            document.getElementById('modal-desa').innerHTML = `<i class="fa-solid fa-location-dot text-brand-gold"></i> Desa ${mosque.desa}, Kartasura`;
+            document.getElementById('modal-address').innerText = mosque.address;
+
+            const distStr = mosque.distance ? `${mosque.distance.toFixed(2)} km` : '-- km';
+            document.getElementById('modal-distance').innerText = distStr;
+            document.getElementById('modal-subuh').innerText = `${mosque.subuhJamaah} Org`;
+            document.getElementById('modal-land').innerText = `${mosque.landArea} m²`;
+
+            document.getElementById('modal-takmir-name').innerText = mosque.takmirName;
+            document.getElementById('modal-takmir-wa').href = `https://wa.me/${mosque.takmirWa}?text=Assalamu'alaikum%20${encodeURIComponent(mosque.takmirName)}`;
+
+            document.getElementById('modal-remaja-name').innerText = mosque.remajaName;
+            document.getElementById('modal-remaja-wa').href = `https://wa.me/${mosque.remajaWa}?text=Assalamu'alaikum%20${encodeURIComponent(mosque.remajaName)}`;
+
+            document.getElementById('modal-coords-dec').innerText = `${mosque.lat}, ${mosque.lng}`;
+            document.getElementById('modal-coords-dms').innerText = `${decToDMS(mosque.lat, true)}, ${decToDMS(mosque.lng, false)}`;
+
+            document.getElementById('modal-gmaps-btn').href = `https://www.google.com/maps/dir/?api=1&destination=${mosque.lat},${mosque.lng}`;
+
+            // Show Sheet & Backdrop
+            const sheetPanel = document.getElementById('sheet-panel');
+            const sheetBackdrop = document.getElementById('sheet-backdrop');
+
+            sheetBackdrop.classList.remove('opacity-0', 'pointer-events-none');
+            sheetPanel.classList.remove('hidden-sheet');
+
+            // Pan Map if map is visible
+            if (activeTab === 'map' && map) {
+                map.panTo([mosque.lat, mosque.lng]);
+            }
+        }
+
+        function closeDetailModal() {
+            const sheetPanel = document.getElementById('sheet-panel');
+            const sheetBackdrop = document.getElementById('sheet-backdrop');
+
+            sheetPanel.classList.add('hidden-sheet');
+            sheetBackdrop.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        // ==========================================
+        // 10. TAB NAVIGATION & VIEW SWITCHING
+        // ==========================================
+        function switchTab(tabName) {
+            activeTab = tabName;
+
+            const mapView = document.getElementById('map-view');
+            const dirView = document.getElementById('directory-view');
+            const repView = document.getElementById('report-view');
+
+            const btnMap = document.getElementById('nav-btn-map');
+            const btnDir = document.getElementById('nav-btn-directory');
+            const btnRep = document.getElementById('nav-btn-report');
+
+            // Reset tab button colors
+            [btnMap, btnDir, btnRep].forEach(btn => {
+                btn.className = "flex flex-col items-center justify-center w-full h-full text-slate-400 font-semibold text-xs hover:text-brand-navy transition-colors";
+            });
+
+            // Hide all views
+            mapView.classList.add('hidden');
+            dirView.classList.add('hidden');
+            repView.classList.add('hidden');
+
+            if (tabName === 'map') {
+                mapView.classList.remove('hidden');
+                btnMap.className = "flex flex-col items-center justify-center w-full h-full text-brand-teal font-extrabold text-xs transition-colors";
+                setTimeout(() => { map.invalidateSize(); }, 200);
+            } else if (tabName === 'directory') {
+                dirView.classList.remove('hidden');
+                btnDir.className = "flex flex-col items-center justify-center w-full h-full text-brand-navy font-extrabold text-xs transition-colors";
+            } else if (tabName === 'report') {
+                repView.classList.remove('hidden');
+                btnRep.className = "flex flex-col items-center justify-center w-full h-full text-brand-navy font-extrabold text-xs transition-colors";
+            }
+        }
+
+        // ==========================================
+        // 11. EXPORT CSV & PRINT PDF EXPORTER
+        // ==========================================
+        function exportToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "ID Wakaf,Nama Masjid,Desa,Alamat,Luas Tanah (m2),Luas Bangunan (m2),Jamaah Subuh,Nama Takmir,WA Takmir,Nama Remaja,WA Remaja,Latitude,Longitude\n";
+
+            MASJID_DATA.forEach(m => {
+                const row = [
+                    `"${m.id}"`,
+                    `"${m.name}"`,
+                    `"${m.desa}"`,
+                    `"${m.address.replace(/"/g, '""')}"`,
+                    m.landArea,
+                    m.buildingArea,
+                    m.subuhJamaah,
+                    `"${m.takmirName}"`,
+                    `"${m.takmirWa}"`,
+                    `"${m.remajaName}"`,
+                    `"${m.remajaWa}"`,
+                    m.lat,
+                    m.lng
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Data_MasjidMu_Kartasura_2026.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast("Berhasil mendownload data CSV!");
+        }
+
+        function triggerPrintPDF() {
+            switchTab('report');
+            setTimeout(() => {
+                window.print();
+            }, 400);
+        }
+
+        // ==========================================
+        // 12. UTILITY TOAST NOTIFICATIONS
+        // ==========================================
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = "bg-brand-navy text-white text-xs px-4 py-2.5 rounded-xl shadow-lg border border-brand-teal/40 flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0";
+            toast.innerHTML = `<i class="fa-solid fa-circle-info text-brand-gold"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 50);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // ==========================================
+        // 13. INLINE SERVICE WORKER & PWA REGISTRATION
+        // ==========================================
+        function registerPWAWorker() {
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    const CACHE_NAME = 'masjidmu-shabran-2026-v1';
+                    self.addEventListener('install', (e) => {
+                        self.skipWaiting();
+                    });
+                    self.addEventListener('activate', (e) => {
+                        e.waitUntil(clients.claim());
+                    });
+                    self.addEventListener('fetch', (e) => {
+                        // Network first fallback strategy
+                        e.respondWith(
+                            fetch(e.request).catch(() => caches.match(e.request))
+                        );
+                    });
+                `;
+                const blob = new Blob([swCode], { type: 'text/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+
+                navigator.serviceWorker.register(swUrl)
+                    .then(() => console.log('PWA Service Worker registered successfully.'))
+                    .catch(err => console.warn('SW registration bypassed:', err));
+            }
+        }
+    </script>
 </body>
 </html>
